@@ -36,7 +36,7 @@
         <spring-boot-actuator-autoconfigure.version>2.1.0.RELEASE</spring-boot-actuator-autoconfigure.version>
         <maven-javadoc-plugin.version>3.0.0</maven-javadoc-plugin.version>
         <wiremock-standalone.version>2.19.0</wiremock-standalone.version>
-        <commons-io.version>2.3</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <hibernate.validator.version>6.0.9.Final</hibernate.validator.version>
     </properties>
 
