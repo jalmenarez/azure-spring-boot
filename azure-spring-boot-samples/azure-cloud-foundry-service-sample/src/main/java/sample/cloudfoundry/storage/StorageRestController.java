@@ -7,6 +7,7 @@ package sample.cloudfoundry.storage;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,9 @@ public class StorageRestController {
             LOG.debug("Uploading image...");
             final BlobClient blobClient = containerClient.getBlobClient("image1.jpg");
             final File imageFile = File.createTempFile("azure-image", ".jpg");
+            try (InputStream imageStream = new URL(IMAGE_PATH).openStream()) {
+                FileUtils.copyInputStreamToFile(imageStream, imageFile);
+            }
             blobClient.uploadFromFile(imageFile.getAbsolutePath(), true);
             LOG.debug("Uploading image complete");
 
