@@ -57,6 +57,8 @@ This project welcomes contributions and suggestions.  Most contributions require
 
 Please follow [instructions here](./HowToContribute.md) to build from source or contribute.
 
+For detailed testing guidelines and best practices, see [TESTING.md](./TESTING.md).
+
 ### Other articles
 You could check below articles to learn more on usage of specific starters.
 
