@@ -11,11 +11,26 @@
 This repo is for Spring Boot Starters of Azure services. It helps Spring Boot developers to adopt Azure services.
 
 ### Support Spring Boot
-This repository supports both Spring Boot 1.5.x, 2.0.x and 2.1.x. Please read [Branch and release](https://github.com/Microsoft/azure-spring-boot/wiki/Branch-and-release) for branch mapping.
+This repository supports Spring Boot 2.7.x and is built on top of [Spring Cloud Azure 4.20.0](https://learn.microsoft.com/azure/developer/java/spring-framework/spring-cloud-azure). Please read [Branch and release](https://github.com/Microsoft/azure-spring-boot/wiki/Branch-and-release) for branch mapping.
 
 ### Prerequisites
-- JDK 1.8 and above
+- JDK 17 and above
 - [Maven](http://maven.apache.org/) 3.0 and above
+
+### Recent Changes
+
+The codebase was migrated from the deprecated `azure-dependencies-bom:2.1.0.M5` to the modern `spring-cloud-azure-dependencies:4.20.0`. Notable changes:
+
+- **Spring Boot**: upgraded `spring-boot-starter-parent` from `2.1.0.RELEASE` to `2.7.18`
+- **Java**: minimum version bumped from 1.8 to 17; Lombok updated to `1.18.30`
+- **Static analysis**: replaced `findbugs-maven-plugin:3.0.5` (incompatible with Java 17 bytecode) with `spotbugs-maven-plugin:4.8.3.1`
+- **Azure SDK migration**:
+  - Key Vault: `azure-keyvault` → `com.azure:azure-security-keyvault-secrets`
+  - Identity: ADAL4J → `com.azure:azure-identity` (`ClientSecretCredential`, `ManagedIdentityCredential`)
+  - Storage: reactive RxJava `ServiceURL`/`ContainerURL`/`BlockBlobURL` → synchronous `BlobServiceClient`/`BlobContainerClient`/`BlobClient`
+  - Service Bus: `QueueClient`/`TopicClient`/`SubscriptionClient` → named `ServiceBusSenderClient`/`ServiceBusReceiverClient` beans
+  - Cosmos DB: `@Document`/`DocumentDbRepository` → `@Container`/`CosmosRepository` (`azure-spring-data-cosmos`)
+- **Tests**: key tests migrated from JUnit 4 to JUnit 5; `KeyVaultOperation` refactored to use functional interfaces so it remains testable under the Java 17 module system
 
 ### Usage
 
