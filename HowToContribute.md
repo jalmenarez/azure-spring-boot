@@ -24,15 +24,76 @@ mvn clean install
 
 ## Test
 
-- Run unit tests
+### Running Tests
+
+- Run all tests including unit and integration tests
 ```bash
 mvn clean install
+```
+
+- Run specific test class
+```bash
+mvn test -Dtest=TelemetrySenderTest
+```
+
+- Run tests matching a pattern
+```bash
+mvn test -Dtest=Telemetry*
 ```
 
 - Skip test execution
 ```bash
 mvn clean install -DskipTests
 ```
+
+- Skip checkstyle validation (useful during development)
+```bash
+mvn clean test -Dcheckstyle.skip=true
+```
+
+### Writing Unit Tests
+
+When contributing new code or features, please include comprehensive unit tests:
+
+- **Test Structure**: Follow the existing pattern using JUnit 4 and Mockito
+- **Naming Convention**: Use `*Test.java` for test classes
+- **Location**: Place tests in `src/test/java` under the same package structure as the code being tested
+- **Coverage**: Aim for code coverage >= 65% for new code
+- **Test Cases**: Include:
+  - Happy path / success scenarios
+  - Error/exception handling
+  - Edge cases (null values, empty collections, boundary values)
+  - Integration with dependencies (using mocks/stubs)
+
+Example test structure:
+```java
+@RunWith(MockitoJUnitRunner.class)
+public class MyServiceTest {
+    
+    @Before
+    public void setUp() {
+        // Initialize test fixtures
+    }
+    
+    @Test
+    public void testSuccessfulOperation() {
+        // Arrange
+        // Act
+        // Assert
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidInput() {
+        // Test error handling
+    }
+}
+```
+
+### Continuous Integration
+
+- Code coverage is automatically checked (minimum 65%)
+- Tests must pass before code can be merged
+- Both unit and integration tests run on CI
 
 ## Version management
 Developing version naming convention is like `2.0.0-SNAPSHOT`. Release version naming convention is like `2.0.0`. Please don't update version if no release plan. 
