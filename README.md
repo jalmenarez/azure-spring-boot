@@ -11,29 +11,44 @@
 This repo is for Spring Boot Starters of Azure services. It helps Spring Boot developers to adopt Azure services.
 
 ### Support Spring Boot
-This repository supports both Spring Boot 1.5.x, 2.0.x and 2.1.x. Please read [Branch and release](https://github.com/Microsoft/azure-spring-boot/wiki/Branch-and-release) for branch mapping.
+This repository supports Spring Boot 2.7.x and is built on top of [Spring Cloud Azure 4.20.0](https://learn.microsoft.com/azure/developer/java/spring-framework/spring-cloud-azure). Please read [Branch and release](https://github.com/Microsoft/azure-spring-boot/wiki/Branch-and-release) for branch mapping.
 
 ### Prerequisites
-- JDK 1.8 and above
+- JDK 17 and above
 - [Maven](http://maven.apache.org/) 3.0 and above
+
+### Recent Changes
+
+The codebase was migrated from the deprecated `azure-dependencies-bom:2.1.0.M5` to the modern `spring-cloud-azure-dependencies:4.20.0`. Notable changes:
+
+- **Spring Boot**: upgraded `spring-boot-starter-parent` from `2.1.0.RELEASE` to `2.7.18`
+- **Java**: minimum version bumped from 1.8 to 17; Lombok updated to `1.18.30`
+- **Static analysis**: replaced `findbugs-maven-plugin:3.0.5` (incompatible with Java 17 bytecode) with `spotbugs-maven-plugin:4.8.3.1`
+- **Azure SDK migration**:
+  - Key Vault: `azure-keyvault` → `com.azure:azure-security-keyvault-secrets`
+  - Identity: ADAL4J → `com.azure:azure-identity` (`ClientSecretCredential`, `ManagedIdentityCredential`)
+  - Storage: reactive RxJava `ServiceURL`/`ContainerURL`/`BlockBlobURL` → synchronous `BlobServiceClient`/`BlobContainerClient`/`BlobClient`
+  - Service Bus: `QueueClient`/`TopicClient`/`SubscriptionClient` → named `ServiceBusSenderClient`/`ServiceBusReceiverClient` beans
+  - Cosmos DB: `@Document`/`DocumentDbRepository` → `@Container`/`CosmosRepository` (`azure-spring-data-cosmos`)
+- **Tests**: key tests migrated from JUnit 4 to JUnit 5; `KeyVaultOperation` refactored to use functional interfaces so it remains testable under the Java 17 module system
 
 ### Usage
 
 Below starters are available with latest release version. We recommend users to leverage latest version for bug fix and new features.
 You can find them in [Maven Central Repository](https://search.maven.org/).
-The first three starters are also available in [Spring Initializr](http://start.spring.io/). 
 
-Starter Name | Version for Spring Boot 2.1.x | Version for Spring Boot 2.0.x
----|:---:|:---:
-[azure-active-directory-spring-boot-starter](azure-spring-boot-starters/azure-active-directory-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-active-directory-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-active-directory-spring-boot-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-active-directory-spring-boot-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:azure-active-directory-spring-boot-starter%20AND%20v:2.0.*)
-[azure-storage-spring-boot-starter](azure-spring-boot-starters/azure-storage-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-storage-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-storage-spring-boot-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-storage-spring-boot-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:azure-storage-spring-boot-starter%20AND%20v:2.0.*)
-[azure-keyvault-secrets-spring-boot-starter](azure-spring-boot-starters/azure-keyvault-secrets-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-keyvault-secrets-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-keyvault-secrets-spring-boot-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-keyvault-secrets-spring-boot-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:azure-keyvault-secrets-spring-boot-starter%20AND%20v:2.0.*)
-[azure-active-directory-b2c-spring-boot-starter](azure-spring-boot-starters/azure-active-directory-b2c-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-active-directory-b2c-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-active-directory-b2c-spring-boot-starter%22) | N/A
-[azure-cosmosdb-spring-boot-starter](azure-spring-boot-starters/azure-cosmosdb-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-cosmosdb-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-cosmosdb-spring-boot-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-cosmosdb-spring-boot-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:azure-cosmosdb-spring-boot-starter%20AND%20v:2.0.*)
-[azure-mediaservices-spring-boot-starter](azure-spring-boot-starters/azure-mediaservices-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-mediaservices-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-mediaservices-spring-boot-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-mediaservices-spring-boot-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:azure-mediaservices-spring-boot-starter%20AND%20v:2.0.*)
-[azure-servicebus-spring-boot-starter](azure-spring-boot-starters/azure-servicebus-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-servicebus-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-servicebus-spring-boot-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-servicebus-spring-boot-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:azure-servicebus-spring-boot-starter%20AND%20v:2.0.*)
-[spring-data-gremlin-boot-starter](azure-spring-boot-starters/spring-data-gremlin-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/spring-data-gremlin-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22spring-data-gremlin-boot-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/spring-data-gremlin-boot-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:spring-data-gremlin-boot-starter%20AND%20v:2.0.*)
-[azure-spring-boot-metrics-starter](azure-spring-boot-starters/azure-spring-boot-metrics-starter) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-spring-boot-metrics-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-spring-boot-metrics-starter%22) | [![](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-spring-boot-metrics-starter/2.0.svg)](https://search.maven.org/search?q=g:com.microsoft.azure%20AND%20a:azure-spring-boot-metrics-starter%20AND%20v:2.0.*)
+Starter Name | Version for Spring Boot 2.7.x
+---|:---:
+[azure-active-directory-spring-boot-starter](azure-spring-boot-starters/azure-active-directory-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-active-directory-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-active-directory-spring-boot-starter%22)
+[azure-storage-spring-boot-starter](azure-spring-boot-starters/azure-storage-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-storage-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-storage-spring-boot-starter%22)
+[azure-keyvault-secrets-spring-boot-starter](azure-spring-boot-starters/azure-keyvault-secrets-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-keyvault-secrets-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-keyvault-secrets-spring-boot-starter%22)
+[azure-active-directory-b2c-spring-boot-starter](azure-spring-boot-starters/azure-active-directory-b2c-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-active-directory-b2c-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-active-directory-b2c-spring-boot-starter%22)
+[azure-cosmosdb-spring-boot-starter](azure-spring-boot-starters/azure-cosmosdb-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-cosmosdb-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-cosmosdb-spring-boot-starter%22)
+[azure-mediaservices-spring-boot-starter](azure-spring-boot-starters/azure-mediaservices-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-mediaservices-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-mediaservices-spring-boot-starter%22)
+[azure-servicebus-spring-boot-starter](azure-spring-boot-starters/azure-servicebus-spring-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-servicebus-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-servicebus-spring-boot-starter%22)
+[azure-sqlserver-spring-boot-starter](azure-spring-boot-starters/azure-sqlserver-spring-boot-starter) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-sqlserver-spring-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-sqlserver-spring-boot-starter%22)
+[spring-data-gremlin-boot-starter](azure-spring-boot-starters/spring-data-gremlin-boot-starter/README.md) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/spring-data-gremlin-boot-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22spring-data-gremlin-boot-starter%22)
+[azure-spring-boot-metrics-starter](azure-spring-boot-starters/azure-spring-boot-metrics-starter) | [![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure/azure-spring-boot-metrics-starter.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.microsoft.azure%22%20AND%20a%3A%22azure-spring-boot-metrics-starter%22)
 
 ### Snapshots  
 [![Nexus OSS](https://img.shields.io/nexus/snapshots/https/oss.sonatype.org/com.microsoft.azure/azure-spring-boot.svg)](https://oss.sonatype.org/content/repositories/snapshots/com/microsoft/azure/azure-spring-boot/)
@@ -57,12 +72,10 @@ This project welcomes contributions and suggestions.  Most contributions require
 
 Please follow [instructions here](./HowToContribute.md) to build from source or contribute.
 
-For detailed testing guidelines and best practices, see [TESTING.md](./TESTING.md).
-
 ### Other articles
 You could check below articles to learn more on usage of specific starters.
 
-[How to use the Spring Boot Starter with Azure Cosmos DB DocumentDB API](https://docs.microsoft.com/en-us/azure/cosmos-db/documentdb-java-spring-boot-starter-with-cosmos-db)
+[How to use the Spring Boot Starter with Azure Cosmos DB SQL API](https://learn.microsoft.com/azure/cosmos-db/nosql/quickstart-java-spring-data)
 
 ### Filing Issues
 
