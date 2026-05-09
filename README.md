@@ -72,6 +72,70 @@ This project welcomes contributions and suggestions.  Most contributions require
 
 Please follow [instructions here](./HowToContribute.md) to build from source or contribute.
 
+### Dev Container
+
+The fastest way to get a fully configured development environment is to use the included dev container. It provides Java 21, Maven 3.9, and all recommended VS Code extensions pre-installed.
+
+#### Option A — GitHub Codespaces (no local setup)
+
+1. Click **Code → Codespaces → Create codespace on master** on the GitHub repository page.
+2. Wait for the container to build (~2 min on first launch).
+3. The environment is ready when the terminal shows `✅ Dev container ready`.
+
+#### Option B — VS Code Dev Containers (local)
+
+**Prerequisites:** [Docker](https://www.docker.com/products/docker-desktop/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for VS Code.
+
+```bash
+git clone https://github.com/jalmenarez/azure-spring-boot.git
+cd azure-spring-boot
+code .
+# VS Code will prompt: "Reopen in Container" → click it
+```
+
+#### Verifying the setup inside the container
+
+```bash
+# 1. Full build + unit tests
+mvn clean verify
+
+# 2. Static analysis only
+mvn spotbugs:check -pl azure-spring-boot
+
+# 3. Build all samples
+mvn package -DskipTests -pl azure-spring-boot-samples -am
+
+# 4. Run a sample app (e.g. Storage)
+cd azure-spring-boot-samples/azure-storage-spring-boot-sample
+mvn spring-boot:run
+# Visit http://localhost:8080
+```
+
+#### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `OutOfMemoryError` during build | Increase Docker memory to ≥ 4 GB in Docker Desktop settings |
+| Port 8080 not accessible | Check VS Code **Ports** tab → forward port 8080 manually |
+| Dependency download fails | Run `mvn dependency:resolve` — Maven cache is shared with host via bind mount |
+
+### Branch Protection (master)
+
+To protect the `master` branch go to **Settings → Branches → Add branch ruleset** and apply the following rules:
+
+| Rule | Value |
+|---|---|
+| **Require a pull request before merging** | ✅ — minimum 1 approval |
+| Dismiss stale reviews when new commits are pushed | ✅ |
+| **Require status checks to pass** | ✅ |
+| Required checks | `build-and-test (17)`, `build-and-test (21)`, `spotbugs`, `build-samples` |
+| Require branches to be up to date before merging | ✅ |
+| **Do not allow force pushes** | ✅ |
+| **Do not allow deletions** | ✅ |
+
+> The required status checks correspond to the jobs defined in `.github/workflows/ci.yml`.
+> They become available for selection after the first CI run on a PR.
+
 ### Other articles
 You could check below articles to learn more on usage of specific starters.
 
