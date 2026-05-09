@@ -26,7 +26,7 @@ public class TelemetryPropertiesTest {
 
     @Test
     public void testSetAndGetInstrumentationKey() {
-        String key = "test-instrumentation-key-12345";
+        final String key = "test-instrumentation-key-12345";
         telemetryProperties.setInstrumentationKey(key);
 
         assertEquals(key, telemetryProperties.getInstrumentationKey());
@@ -66,7 +66,7 @@ public class TelemetryPropertiesTest {
 
     @Test
     public void testInstrumentationKeyWithSpecialCharacters() {
-        String keyWithSpecialChars = "key-with-!@#$%^&*()-_=+[]{}|;:',.<>?/";
+        final String keyWithSpecialChars = "key-with-!@#$%^&*()-_=+[]{}|;:',.<>?/";
         telemetryProperties.setInstrumentationKey(keyWithSpecialChars);
 
         assertEquals(keyWithSpecialChars, telemetryProperties.getInstrumentationKey());

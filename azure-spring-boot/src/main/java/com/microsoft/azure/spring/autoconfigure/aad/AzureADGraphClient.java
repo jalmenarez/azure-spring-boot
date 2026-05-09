@@ -149,8 +149,7 @@ public class AzureADGraphClient {
     /**
      * Determines if this is a valid {@link UserGroup} to build to a GrantedAuthority.
      * <p>
-     * If the {@link UserGroupProperties#getAllowedGroups()} or the {@link
-     * AADAuthenticationProperties#getActiveDirectoryGroups()} contains the {@link UserGroup#getDisplayName()} return
+     * If the allowed-groups or active-directory-groups contains the {@link UserGroup#getDisplayName()} return
      * true.
      *
      * @param group - User Group to check if valid to grant an authority to.

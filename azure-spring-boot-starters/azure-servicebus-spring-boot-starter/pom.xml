@@ -26,9 +26,10 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-spring-boot-starter</artifactId>
         </dependency>
+        <!-- azure-messaging-servicebus replaces deprecated azure-servicebus -->
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-servicebus</artifactId>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-messaging-servicebus</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>

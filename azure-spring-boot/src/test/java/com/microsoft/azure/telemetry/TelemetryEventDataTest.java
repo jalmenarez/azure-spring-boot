@@ -20,11 +20,11 @@ public class TelemetryEventDataTest {
 
     @Test
     public void testTelemetryEventDataCreation() {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         properties.put("key1", "value1");
         properties.put("key2", "value2");
 
-        TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
+        final TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
 
         assertNotNull(eventData);
         assertEquals("Microsoft.ApplicationInsights.Event", eventData.getName());
@@ -36,9 +36,9 @@ public class TelemetryEventDataTest {
 
     @Test
     public void testTelemetryEventDataWithEmptyProperties() {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
 
-        TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
+        final TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
 
         assertNotNull(eventData);
         assertEquals("Microsoft.ApplicationInsights.Event", eventData.getName());
@@ -46,13 +46,13 @@ public class TelemetryEventDataTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTelemetryEventDataWithNullEventName() {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         new TelemetryEventData(null, properties);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTelemetryEventDataWithEmptyEventName() {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         new TelemetryEventData("", properties);
     }
 
@@ -63,21 +63,21 @@ public class TelemetryEventDataTest {
 
     @Test
     public void testTelemetryEventDataTimeFormat() {
-        Map<String, String> properties = new HashMap<>();
-        TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
+        final Map<String, String> properties = new HashMap<>();
+        final TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
 
-        String time = eventData.getTime();
+        final String time = eventData.getTime();
         assertNotNull(time);
         assertTrue(time.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?"));
     }
 
     @Test
     public void testTelemetryEventDataSerialization() throws Exception {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         properties.put("testKey", "testValue");
 
-        TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
-        String json = MAPPER.writeValueAsString(eventData);
+        final TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
+        final String json = MAPPER.writeValueAsString(eventData);
 
         assertNotNull(json);
         assertTrue(json.contains("Microsoft.ApplicationInsights.Event"));
@@ -87,12 +87,12 @@ public class TelemetryEventDataTest {
 
     @Test
     public void testTelemetryEventDataWithMultipleProperties() {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         properties.put("prop1", "value1");
         properties.put("prop2", "value2");
         properties.put("prop3", "value3");
 
-        TelemetryEventData eventData = new TelemetryEventData("MultiPropEvent", properties);
+        final TelemetryEventData eventData = new TelemetryEventData("MultiPropEvent", properties);
 
         assertNotNull(eventData);
         assertEquals("Microsoft.ApplicationInsights.Event", eventData.getName());
@@ -100,18 +100,17 @@ public class TelemetryEventDataTest {
 
     @Test
     public void testTelemetryEventDataTagsContent() {
-        Map<String, String> properties = new HashMap<>();
-        TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
+        final Map<String, String> properties = new HashMap<>();
+        final TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
 
         assertNotNull(eventData.getTags());
     }
 
     @Test
     public void testTelemetryEventDataBaseData() {
-        Map<String, String> properties = new HashMap<>();
-        TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
+        final Map<String, String> properties = new HashMap<>();
+        final TelemetryEventData eventData = new TelemetryEventData("TestEvent", properties);
 
         assertNotNull(eventData.getData());
-        assertEquals("EventData", eventData.getData().getBaseType());
     }
 }

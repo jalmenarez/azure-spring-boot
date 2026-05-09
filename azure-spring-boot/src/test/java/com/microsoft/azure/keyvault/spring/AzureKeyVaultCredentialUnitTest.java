@@ -5,20 +5,28 @@
  */
 package com.microsoft.azure.keyvault.spring;
 
-import org.junit.Before;
-import org.junit.Test;
+import com.azure.identity.ClientSecretCredential;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AzureKeyVaultCredentialUnitTest {
 
     private AzureKeyVaultCredential keyVaultCredential;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        keyVaultCredential = new AzureKeyVaultCredential("fakeClientId", "fakeClientKey", 30);
+        keyVaultCredential = new AzureKeyVaultCredential("fakeTenantId", "fakeClientId", "fakeClientKey");
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testDoAuthenticationRejctIfInvalidCredential() {
-        keyVaultCredential.doAuthenticate("https://fakeauthorizationurl.com", "keyvault", "scope");
+    @Test
+    public void testGetTokenCredentialReturnsNonNull() {
+        assertThat(keyVaultCredential.getTokenCredential()).isNotNull();
+    }
+
+    @Test
+    public void testGetTokenCredentialReturnsClientSecretCredential() {
+        assertThat(keyVaultCredential.getTokenCredential()).isInstanceOf(ClientSecretCredential.class);
     }
 }

@@ -5,32 +5,42 @@
  */
 package sample.servicebus;
 
-import com.microsoft.azure.servicebus.*;
-import com.microsoft.azure.servicebus.primitives.ServiceBusException;
+import com.azure.messaging.servicebus.ServiceBusReceivedMessage;
+import com.azure.messaging.servicebus.ServiceBusReceiverClient;
+import com.azure.messaging.servicebus.ServiceBusSenderClient;
+import com.azure.messaging.servicebus.ServiceBusMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 @SpringBootApplication
 public class ServiceBusSampleApplication implements CommandLineRunner {
 
     @Autowired
-    private QueueClient queueClient;
-    @Autowired
-    private TopicClient topicClient;
-    @Autowired
-    private SubscriptionClient subscriptionClient;
+    @Qualifier("queueSenderClient")
+    private ServiceBusSenderClient queueSenderClient;
 
-    public static void main(String[] args) {
+    @Autowired
+    @Qualifier("topicSenderClient")
+    private ServiceBusSenderClient topicSenderClient;
+
+    @Autowired
+    @Qualifier("queueReceiverClient")
+    private ServiceBusReceiverClient queueReceiverClient;
+
+    @Autowired
+    @Qualifier("subscriptionReceiverClient")
+    private ServiceBusReceiverClient subscriptionReceiverClient;
+
+    public static void main(final String[] args) {
         SpringApplication.run(ServiceBusSampleApplication.class);
     }
 
-    public void run(String... var1) throws ServiceBusException, InterruptedException {
+    public void run(final String... var1) {
         sendQueueMessage();
         receiveQueueMessage();
 
@@ -40,44 +50,33 @@ public class ServiceBusSampleApplication implements CommandLineRunner {
 
     // NOTE: Please be noted that below are the minimum code for demonstrating the usage of autowired clients.
     // For complete documentation of Service Bus, reference https://azure.microsoft.com/en-us/services/service-bus/
-    private void sendQueueMessage() throws ServiceBusException, InterruptedException {
+    private void sendQueueMessage() {
         final String messageBody = "queue message";
         System.out.println("Sending message: " + messageBody);
-        final Message message = new Message(messageBody.getBytes(StandardCharsets.UTF_8));
-        queueClient.send(message);
+        queueSenderClient.sendMessage(new ServiceBusMessage(messageBody));
     }
 
-    private void receiveQueueMessage() throws ServiceBusException, InterruptedException {
-        queueClient.registerMessageHandler(new MessageHandler(), new MessageHandlerOptions());
-
-        TimeUnit.SECONDS.sleep(5);
-        queueClient.close();
+    private void receiveQueueMessage() {
+        final Optional<ServiceBusReceivedMessage> message = queueReceiverClient.receiveMessages(1)
+                .stream().findFirst();
+        message.ifPresent(m -> {
+            System.out.println("Received message: " + m.getBody().toString());
+            queueReceiverClient.complete(m);
+        });
     }
 
-    private void sendTopicMessage() throws ServiceBusException, InterruptedException {
+    private void sendTopicMessage() {
         final String messageBody = "topic message";
         System.out.println("Sending message: " + messageBody);
-        final Message message = new Message(messageBody.getBytes(StandardCharsets.UTF_8));
-        topicClient.send(message);
-        topicClient.close();
+        topicSenderClient.sendMessage(new ServiceBusMessage(messageBody));
     }
 
-    private void receiveSubscriptionMessage() throws ServiceBusException, InterruptedException {
-        subscriptionClient.registerMessageHandler(new MessageHandler(), new MessageHandlerOptions());
-
-        TimeUnit.SECONDS.sleep(5);
-        subscriptionClient.close();
-    }
-
-    static class MessageHandler implements IMessageHandler {
-        public CompletableFuture<Void> onMessageAsync(IMessage message) {
-            final String messageString = new String(message.getBody(), StandardCharsets.UTF_8);
-            System.out.println("Received message: " + messageString);
-            return CompletableFuture.completedFuture(null);
-        }
-
-        public void notifyException(Throwable exception, ExceptionPhase phase) {
-            System.out.println(phase + " encountered exception:" + exception.getMessage());
-        }
+    private void receiveSubscriptionMessage() {
+        final Optional<ServiceBusReceivedMessage> message = subscriptionReceiverClient.receiveMessages(1)
+                .stream().findFirst();
+        message.ifPresent(m -> {
+            System.out.println("Received message: " + m.getBody().toString());
+            subscriptionReceiverClient.complete(m);
+        });
     }
 }

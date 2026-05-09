@@ -26,9 +26,12 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-spring-boot-starter</artifactId>
         </dependency>
+        <!-- azure-media is deprecated with no direct replacement in modern Azure SDK.
+             Consider Azure Media Services REST API or Azure Video Indexer for new projects. -->
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-media</artifactId>
+            <version>0.9.8</version>
         </dependency>
     </dependencies>
 </project>

@@ -5,103 +5,71 @@
  */
 package sample.cloudfoundry.servicebus;
 
-import com.microsoft.azure.servicebus.*;
-import com.microsoft.azure.servicebus.primitives.ServiceBusException;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import com.azure.messaging.servicebus.ServiceBusReceivedMessage;
+import com.azure.messaging.servicebus.ServiceBusReceiverClient;
+import com.azure.messaging.servicebus.ServiceBusSenderClient;
+import com.azure.messaging.servicebus.ServiceBusMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 
 @RestController
 public class ServiceBusRestController {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(ServiceBusRestController.class);
-
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceBusRestController.class);
     private static final String CR = "</BR>";
-    private static StringBuffer currentResult = null;
-    @Autowired
-    private QueueClient queueClientForSending;
-    @Autowired
-    private QueueClient queueClientForReceiving;
 
-    @PostConstruct
-    private void postConstruct() {
-        LOG.debug("postConstruct start...");
-        try {
-            LOG.debug("registering queue handler...");
-            queueClientForReceiving.registerMessageHandler(new MessageHandler(),
-                    new MessageHandlerOptions());
-            LOG.debug("done registering handlers...");
-        } catch (InterruptedException e) {
-            LOG.error("Error registering message handler", e);
-        } catch (ServiceBusException e) {
-            LOG.error("Error registering message handler", e);
-        }
-        LOG.debug("postConstruct end.");
-    }
+    @Autowired
+    @Qualifier("queueSenderClient")
+    private ServiceBusSenderClient queueSenderClient;
+
+    @Autowired
+    @Qualifier("queueReceiverClient")
+    private ServiceBusReceiverClient queueReceiverClient;
 
     @RequestMapping(value = "/sb", method = RequestMethod.GET)
     @ResponseBody
-    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-    public String processMessages(HttpServletResponse response) {
-        final StringBuffer result = new StringBuffer();
-        currentResult = result;
-        result.append("starting..." + CR);
+    public String processMessages(final HttpServletResponse response) {
+        final StringBuilder result = new StringBuilder();
+        result.append("starting...").append(CR);
         try {
-            result.append("sending queue message" + CR);
+            result.append("sending queue message").append(CR);
             sendQueueMessage();
-            result.append("receiving queue message" + CR);
+
+            result.append("receiving queue message").append(CR);
             Thread.sleep(2000);
+            receiveQueueMessage(result);
 
-            result.append("done!" + CR);
-
-        } catch (ServiceBusException e) {
-            LOG.error("Error processing messages", e);
+            result.append("done!").append(CR);
         } catch (InterruptedException e) {
             LOG.error("Error processing messages", e);
-        } finally {
-            currentResult = null;
+            Thread.currentThread().interrupt();
         }
-
         return result.toString();
     }
 
-    // NOTE: Please be noted that below are the minimum code for demonstrating
-    // the usage of autowired clients.
-    // For complete documentation of Service Bus, reference
-    // https://azure.microsoft.com/en-us/services/service-bus/
-    private void sendQueueMessage() throws ServiceBusException,
-            InterruptedException {
+    private void sendQueueMessage() {
         final String messageBody = "queue message";
-        LOG.debug("Sending message: " + messageBody);
-        final Message message = new Message(
-                messageBody.getBytes(StandardCharsets.UTF_8));
-        queueClientForSending.send(message);
+        LOG.debug("Sending message: {}", messageBody);
+        queueSenderClient.sendMessage(new ServiceBusMessage(messageBody));
     }
 
-    static class MessageHandler implements IMessageHandler {
-        public CompletableFuture<Void> onMessageAsync(IMessage message) {
-            final String messageString = new String(message.getBody(),
-                    StandardCharsets.UTF_8);
-            LOG.debug("Received message: " + messageString);
-            if (currentResult != null) {
-                currentResult.append("Received message: " + messageString + CR);
-            }
-            return CompletableFuture.completedFuture(null);
-        }
-
-        public void notifyException(Throwable exception, ExceptionPhase phase) {
-            LOG.error(phase + " encountered exception:", exception);
-        }
+    private void receiveQueueMessage(final StringBuilder result) {
+        final Optional<ServiceBusReceivedMessage> message = queueReceiverClient.receiveMessages(1)
+                .stream().findFirst();
+        message.ifPresent(m -> {
+            final String body = m.getBody().toString();
+            LOG.debug("Received message: {}", body);
+            result.append("Received message: ").append(body).append(CR);
+            queueReceiverClient.complete(m);
+        });
     }
 }

@@ -26,17 +26,15 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-spring-boot-starter</artifactId>
         </dependency>
+        <!-- azure-security-keyvault-secrets replaces deprecated azure-keyvault -->
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-keyvault</artifactId>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-security-keyvault-secrets</artifactId>
         </dependency>
+        <!-- azure-identity replaces deprecated azure-client-authentication + adal4j -->
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-client-authentication</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>adal4j</artifactId>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

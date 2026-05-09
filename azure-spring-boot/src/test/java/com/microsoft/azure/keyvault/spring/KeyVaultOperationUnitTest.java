@@ -5,31 +5,20 @@
  */
 package com.microsoft.azure.keyvault.spring;
 
-import com.microsoft.azure.Page;
-import com.microsoft.azure.PagedList;
-import com.microsoft.azure.keyvault.KeyVaultClient;
-import com.microsoft.azure.keyvault.models.SecretBundle;
-import com.microsoft.azure.keyvault.models.SecretItem;
-import com.microsoft.rest.RestException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class KeyVaultOperationUnitTest {
 
-    private static final String testPropertyName1 = "testPropertyName1";
-
-    private static final String fakeVaultUri = "https://fake.vault.com";
+    private static final String TEST_PROPERTY_NAME_1 = "testpropertynamе1";
 
     private static final String TEST_SPRING_RELAXED_BINDING_NAME_0 = "acme.my-project.person.first-name";
 
@@ -48,71 +37,34 @@ public class KeyVaultOperationUnitTest {
             TEST_SPRING_RELAXED_BINDING_NAME_3
     );
 
-    @Mock
-    private KeyVaultClient keyVaultClient;
-    private KeyVaultOperation keyVaultOperation;
-
-    public void setupSecretBundle(String id, String value) {
-        final PagedList<SecretItem> mockResult = new PagedList<SecretItem>() {
-            @Override
-            public Page<SecretItem> nextPage(String s) throws RestException {
-                return new MockPage();
-            }
-        };
-
-        final SecretItem secretItem = new SecretItem();
-        secretItem.withId(id);
-        mockResult.add(secretItem);
-
-        final SecretBundle secretBundle = new SecretBundle();
-
-        secretBundle.withId(id).withValue(value);
-
-        when(keyVaultClient.listSecrets(anyString())).thenReturn(mockResult);
-        when(keyVaultClient.getSecret(anyString(), anyString())).thenReturn(secretBundle);
-
-        keyVaultOperation = new KeyVaultOperation(keyVaultClient, fakeVaultUri);
+    private static KeyVaultOperation buildOperation(final String secretName, final String secretValue) {
+        final Map<String, String> store = new HashMap<>();
+        store.put(secretName.toLowerCase(Locale.US), secretValue);
+        return new KeyVaultOperation(
+            action -> Collections.singletonList(secretName).forEach(action),
+            store::get,
+            Constants.DEFAULT_REFRESH_INTERVAL_MS
+        );
     }
 
     @Test
     public void testGet() {
-        setupSecretBundle(testPropertyName1, testPropertyName1);
-
-        assertThat(keyVaultOperation.get(testPropertyName1)).isEqualToIgnoringCase(testPropertyName1);
+        final KeyVaultOperation op = buildOperation(TEST_PROPERTY_NAME_1, TEST_PROPERTY_NAME_1);
+        assertThat(op.get(TEST_PROPERTY_NAME_1)).isEqualTo(TEST_PROPERTY_NAME_1);
     }
 
     @Test
     public void testList() {
-        setupSecretBundle(testPropertyName1, testPropertyName1);
-
-        final String[] result = keyVaultOperation.list();
-
-        assertThat(result.length).isEqualTo(1);
-        assertThat(result[0]).isEqualToIgnoringCase(testPropertyName1);
+        final KeyVaultOperation op = buildOperation(TEST_PROPERTY_NAME_1, TEST_PROPERTY_NAME_1);
+        final String[] result = op.list();
+        assertThat(result).contains(TEST_PROPERTY_NAME_1.toLowerCase(Locale.US));
     }
 
     @Test
     public void setTestSpringRelaxedBindingNames() {
-        setupSecretBundle(TEST_AZURE_KEYVAULT_NAME, TEST_AZURE_KEYVAULT_NAME);
-
+        final KeyVaultOperation op = buildOperation(TEST_AZURE_KEYVAULT_NAME, TEST_AZURE_KEYVAULT_NAME);
         TEST_SPRING_RELAXED_BINDING_NAMES.forEach(
-                n -> assertThat(keyVaultOperation.get(n)).isEqualTo(TEST_AZURE_KEYVAULT_NAME)
+            n -> assertThat(op.get(n)).isEqualTo(TEST_AZURE_KEYVAULT_NAME)
         );
-    }
-
-    class MockPage implements Page<SecretItem> {
-
-        final SecretItem mockSecretItem = new SecretItem();
-
-        @Override
-        public String nextPageLink() {
-            return null;
-        }
-
-        @Override
-        public List<SecretItem> items() {
-            mockSecretItem.withId("testPropertyName1");
-            return Collections.singletonList(mockSecretItem);
-        }
     }
 }

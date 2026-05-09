@@ -47,19 +47,62 @@
 
     <properties>
         <azure.spring.boot.version>2.1.7-SNAPSHOT</azure.spring.boot.version>
-        <azure.dependencies.bom.version>2.1.0.M5</azure.dependencies.bom.version>
+        <spring.cloud.azure.version>4.20.0</spring.cloud.azure.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Azure Dependencies Bom -->
+            <!-- Spring Cloud Azure Dependencies BOM (replaces azure-dependencies-bom) -->
             <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-dependencies-bom</artifactId>
-                <version>${azure.dependencies.bom.version}</version>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-dependencies</artifactId>
+                <version>${spring.cloud.azure.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Azure Spring Boot base -->
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-spring-boot</artifactId>
+                <version>${azure.spring.boot.version}</version>
+            </dependency>
+            <!-- Spring Cloud Azure Starters (replacing old azure-spring-boot-starters) -->
+            <dependency>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-starter</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-starter-active-directory</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-starter-active-directory-b2c</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-starter-data-cosmos</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-starter-storage-blob</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-starter-servicebus</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-starter-keyvault-secrets</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+            </dependency>
+            <!-- Legacy starters maintained for backward compatibility -->
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-spring-boot-starter</artifactId>
@@ -113,11 +156,6 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-sqlserver-spring-boot-starter</artifactId>
-                <version>${azure.spring.boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-spring-boot</artifactId>
                 <version>${azure.spring.boot.version}</version>
             </dependency>
         </dependencies>

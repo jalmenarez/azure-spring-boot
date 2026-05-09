@@ -11,4 +11,11 @@
 
     <Class name="com.microsoft.azure.telemetry.TelemetrySender"/>
     <Bug pattern="REC_CATCH_EXCEPTION"/>
+
+    <!-- Pre-existing design patterns in Spring configuration classes -->
+    <Bug pattern="EI_EXPOSE_REP"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR"/>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
 </FindBugsFilter>

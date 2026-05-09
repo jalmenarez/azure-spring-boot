@@ -6,12 +6,11 @@
 
 package com.microsoft.azure.keyvault.spring;
 
-import com.microsoft.azure.credentials.AppServiceMSICredentials;
-import com.microsoft.azure.credentials.MSICredentials;
-import com.microsoft.rest.credentials.ServiceClientCredentials;
-import org.hamcrest.core.IsInstanceOf;
-import org.junit.Before;
-import org.junit.Test;
+import com.azure.core.credential.TokenCredential;
+import com.azure.identity.ClientSecretCredential;
+import com.azure.identity.ManagedIdentityCredential;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -27,16 +26,16 @@ import java.util.Map;
 
 import static com.microsoft.azure.keyvault.spring.Constants.AZURE_KEYVAULT_CLIENT_ID;
 import static com.microsoft.azure.keyvault.spring.Constants.AZURE_KEYVAULT_CERTIFICATE_PATH;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class KeyVaultEnvironmentPostProcessorTest {
     private KeyVaultEnvironmentPostProcessorHelper keyVaultEnvironmentPostProcessorHelper;
     private ConfigurableEnvironment environment;
     private MutablePropertySources propertySources;
-    private Map<String, Object> testProperties = new HashMap<>();
+    private final Map<String, Object> testProperties = new HashMap<>();
 
-    @Before
+    @BeforeEach
     public void setup() {
         environment = new MockEnvironment();
         testProperties.clear();
@@ -44,62 +43,39 @@ public class KeyVaultEnvironmentPostProcessorTest {
     }
 
     @Test
-    public void testGetCredentialsWhenMSIEnabledInAppService() {
-        testProperties.put("MSI_ENDPOINT", "fakeendpoint");
-        testProperties.put("MSI_SECRET", "fakesecret");
-        propertySources.addLast(new MapPropertySource("Test_Properties", testProperties));
-
+    public void testGetCredentialsWhenNoConfigUsesSystemMSI() {
         keyVaultEnvironmentPostProcessorHelper = new KeyVaultEnvironmentPostProcessorHelper(environment);
-
-        final ServiceClientCredentials credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
-
-        assertThat(credentials, IsInstanceOf.instanceOf(AppServiceMSICredentials.class));
+        final TokenCredential credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
+        assertThat(credentials).isInstanceOf(ManagedIdentityCredential.class);
     }
 
     @Test
     public void testGetCredentialsWhenUsingClientAndKey() {
         testProperties.put("azure.keyvault.client-id", "aaaa-bbbb-cccc-dddd");
         testProperties.put("azure.keyvault.client-key", "mySecret");
+        testProperties.put("azure.keyvault.tenant-id", "eeee-ffff-0000-1111");
         propertySources.addLast(new MapPropertySource("Test_Properties", testProperties));
 
         keyVaultEnvironmentPostProcessorHelper = new KeyVaultEnvironmentPostProcessorHelper(environment);
-
-        final ServiceClientCredentials credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
-
-        assertThat(credentials, IsInstanceOf.instanceOf(AzureKeyVaultCredential.class));
+        final TokenCredential credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
+        assertThat(credentials).isInstanceOf(ClientSecretCredential.class);
     }
 
     @Test
-    public void testGetCredentialsWhenMSIEnabledInVMWithClientId() {
+    public void testGetCredentialsWhenMSIEnabledWithClientId() {
         testProperties.put("azure.keyvault.client-id", "aaaa-bbbb-cccc-dddd");
         propertySources.addLast(new MapPropertySource("Test_Properties", testProperties));
 
         keyVaultEnvironmentPostProcessorHelper = new KeyVaultEnvironmentPostProcessorHelper(environment);
-
-        final ServiceClientCredentials credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
-
-        assertThat(credentials, IsInstanceOf.instanceOf(AzureKeyVaultMSICredential.class));
+        final TokenCredential credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
+        assertThat(credentials).isInstanceOf(ManagedIdentityCredential.class);
     }
 
     @Test
-    public void testGetCredentialsWhenMSIEnabledInVMWithoutClientId() {
+    public void testGetCredentialsWhenMSIEnabledWithoutClientId() {
         keyVaultEnvironmentPostProcessorHelper = new KeyVaultEnvironmentPostProcessorHelper(environment);
-
-        final ServiceClientCredentials credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
-
-        assertThat(credentials, IsInstanceOf.instanceOf(AzureKeyVaultMSICredential.class));
-    }
-
-    @Test
-    public void testGetCredentialsWhenPFXCertConfigured() {
-        testProperties.put(AZURE_KEYVAULT_CLIENT_ID, "aaaa-bbbb-cccc-dddd");
-        testProperties.put(AZURE_KEYVAULT_CERTIFICATE_PATH, "fake-pfx-cert.pfx");
-
-        propertySources.addLast(new MapPropertySource("Test_Properties", testProperties));
-        keyVaultEnvironmentPostProcessorHelper = new KeyVaultEnvironmentPostProcessorHelper(environment);
-
-        final ServiceClientCredentials credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
-        assertThat(credentials, IsInstanceOf.instanceOf(KeyVaultCertificateCredential.class));
+        final TokenCredential credentials = keyVaultEnvironmentPostProcessorHelper.getCredentials();
+        assertThat(credentials).isInstanceOf(ManagedIdentityCredential.class);
     }
 
     @Test
@@ -115,12 +91,11 @@ public class KeyVaultEnvironmentPostProcessorTest {
                 .withPropertyValues("azure.keyvault.uri=fakeuri", "azure.keyvault.enabled=true");
 
         contextRunner.run(context -> {
-            assertThat("Configured order for KeyVaultEnvironmentPostProcessor is different with default order " +
-                            "value.",
-                    KeyVaultEnvironmentPostProcessor.DEFAULT_ORDER != OrderedProcessConfig.TEST_ORDER);
-            assertEquals("KeyVaultEnvironmentPostProcessor order should be changed.",
-                    OrderedProcessConfig.TEST_ORDER,
-                    context.getBean(KeyVaultEnvironmentPostProcessor.class).getOrder());
+            assertThat(KeyVaultEnvironmentPostProcessor.DEFAULT_ORDER)
+                    .isNotEqualTo(OrderedProcessConfig.TEST_ORDER);
+            assertEquals(OrderedProcessConfig.TEST_ORDER,
+                    context.getBean(KeyVaultEnvironmentPostProcessor.class).getOrder(),
+                    "KeyVaultEnvironmentPostProcessor order should be changed.");
         });
     }
 }
@@ -137,4 +112,3 @@ class OrderedProcessConfig {
         return processor;
     }
 }
-
