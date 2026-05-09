@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build-and-test:
+    name: Build & Test (Java ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [17, 21]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: microsoft
+          cache: maven
+
+      - name: Build & Unit Tests
+        run: mvn clean verify --no-transfer-progress -Dgpg.skip=true
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-java${{ matrix.java }}
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 7
+
+  spotbugs:
+    name: SpotBugs Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: microsoft
+          cache: maven
+
+      - name: Run SpotBugs
+        run: mvn compile spotbugs:check --no-transfer-progress -pl azure-spring-boot -Dgpg.skip=true
+
+      - name: Upload SpotBugs report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-report
+          path: azure-spring-boot/target/spotbugsXml.xml
+          retention-days: 7
+
+  build-samples:
+    name: Build Samples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: microsoft
+          cache: maven
+
+      - name: Build parent & BOM first
+        run: mvn install -DskipTests --no-transfer-progress -Dgpg.skip=true -pl . -pl azure-spring-boot-bom -pl azure-spring-boot-parent -pl azure-spring-boot -am
+
+      - name: Build samples
+        run: mvn package -DskipTests --no-transfer-progress -Dgpg.skip=true -pl azure-spring-boot-samples -am
