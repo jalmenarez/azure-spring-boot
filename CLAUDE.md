@@ -62,6 +62,66 @@ The codebase was recently migrated from `azure-dependencies-bom:2.1.0.M5` (Sprin
 
 The required status checks for `master` branch protection are: `build-and-test (17)`, `build-and-test (21)`, `spotbugs`, `build-samples`. `.travis.yml` and `appveyor.yml` are obsolete leftover files.
 
+## Key Versions at a Glance
+
+| Component | Version | Note |
+|-----------|---------|------|
+| Spring Boot | 2.7.18 | LTS for 2.x branch |
+| Spring Cloud Azure | 4.20.0 | Imported in `azure-spring-boot-bom` |
+| Java | 17+ | minimum; also tested on 21 in CI |
+| Maven | 3.0+ | |
+| SpotBugs | 4.8.3.1 | runs in `compile` phase |
+| Lombok | 1.18.30 | required for model POJOs |
+| Mockito | 4.11.0+ | JUnit 5 compatible |
+
+## Configuration Properties Pattern
+
+Every starter has a `*Properties` class using `@ConfigurationProperties`. Example: `azure-servicebus-spring-boot-starter/src/main/java/...ServiceBusProperties.java`. These are auto-wired by `*AutoConfiguration` classes which expose beans like `ServiceBusSenderClient`, `ServiceBusReceiverClient`, etc.
+
+To see all available properties for a starter:
+- Find the `*Properties.java` class in the starter's main source
+- It documents all fields with `@Value` or direct field assignments
+- Properties are prefixed (e.g., `spring.cloud.azure.servicebus.*`)
+- Some properties have defaults; others are required and will fail the context if missing
+
+## Running a Sample App Locally
+
+Each sample in `azure-spring-boot-samples/` is a runnable Spring Boot app. To test changes:
+
+```bash
+# Build and install core + starters first
+mvn install -DskipTests -pl .,azure-spring-boot-bom,azure-spring-boot-parent,azure-spring-boot -am
+
+# Run a sample
+cd azure-spring-boot-samples/azure-storage-spring-boot-sample
+mvn spring-boot:run
+# Visit http://localhost:8080
+```
+
+Use `spring-boot:run` to pick up property changes without rebuilding JAR. Credentials (e.g., `AZURE_STORAGE_ACCOUNT_NAME`, `AZURE_STORAGE_ACCOUNT_KEY`) are typically passed as environment variables or in `application.properties`.
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `Filename too long` on Windows | Clone with `-c core.longPaths=true` flag |
+| `OutOfMemoryError` during `mvn clean verify` | Increase Maven heap: `export MAVEN_OPTS="-Xmx2g"` |
+| SpotBugs report not generated | Run `mvn compile spotbugs:check -pl azure-spring-boot`; report is in `target/spotbugsXml.xml` |
+| Checkstyle fails with weird formatting errors | Run `mvn checkstyle:check` in verbose mode to see violations; use `-Dcheckstyle.skip=true` while iterating |
+| A sample app won't start (context error) | Check if required Azure credentials are set (env vars or `application.properties`) |
+| `WARNING: Unknown module` during tests | This is from invalid `--add-opens` in surefire. Don't add opens for `com.azure.*`; only `java.base/java.lang` and `java.base/java.util` are valid. |
+
+## Pull Request Workflow
+
+1. Create a feature branch from `master`: `git checkout -b feat/your-feature`
+2. Make changes, test locally: `mvn clean verify`
+3. Push to remote: `git push -u origin feat/your-feature`
+4. Open a PR on GitHub
+5. All three CI jobs must pass: `build-and-test (17)`, `build-and-test (21)`, `spotbugs`, `build-samples`
+6. Get one approval, then merge
+
+If you need to commit a doc-only fix directly to master and can't push (403 Forbidden), use the GitHub MCP `mcp__github__create_or_update_file` tool with `branch: "master"`.
+
 ## Conventions
 
 - **Checkstyle** (`config/checkstyle.xml`) is enforced in the `validate` phase and fails the build on violation. Use `-Dcheckstyle.skip=true` while iterating, never to merge.
