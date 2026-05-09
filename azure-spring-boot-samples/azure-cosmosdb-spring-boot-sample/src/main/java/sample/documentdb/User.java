@@ -6,11 +6,11 @@
 
 package sample.documentdb;
 
-import com.microsoft.azure.spring.data.cosmosdb.core.mapping.Document;
+import com.azure.spring.data.cosmos.core.mapping.Container;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Document(collection = "mycollection")
+@Container(containerName = "mycollection")
 @Data
 @AllArgsConstructor
 public class User {
@@ -20,7 +20,6 @@ public class User {
     private String address;
 
     public User() {
-
     }
 
     @Override
@@ -28,4 +27,3 @@ public class User {
         return String.format("%s %s, %s", firstName, lastName, address);
     }
 }
-

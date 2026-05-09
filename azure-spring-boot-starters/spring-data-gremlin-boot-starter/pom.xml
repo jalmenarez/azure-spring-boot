@@ -25,9 +25,12 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-spring-boot-starter</artifactId>
         </dependency>
+        <!-- spring-data-gremlin is deprecated. Use Azure Cosmos DB Gremlin API with azure-cosmos instead.
+             Keeping explicit version as this is not managed by spring-cloud-azure-dependencies BOM. -->
         <dependency>
             <groupId>com.microsoft.spring.data.gremlin</groupId>
             <artifactId>spring-data-gremlin</artifactId>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

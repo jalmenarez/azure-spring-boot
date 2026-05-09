@@ -6,13 +6,13 @@
 
 package com.microsoft.azure.spring.autoconfigure.servicebus;
 
-import com.microsoft.azure.servicebus.QueueClient;
-import com.microsoft.azure.servicebus.SubscriptionClient;
-import com.microsoft.azure.servicebus.TopicClient;
-import com.microsoft.azure.servicebus.primitives.ConnectionStringBuilder;
-import com.microsoft.azure.servicebus.primitives.ServiceBusException;
+import com.azure.messaging.servicebus.ServiceBusClientBuilder;
+import com.azure.messaging.servicebus.ServiceBusReceiverClient;
+import com.azure.messaging.servicebus.ServiceBusSenderClient;
 import com.microsoft.azure.telemetry.TelemetrySender;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,57 +25,81 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.microsoft.azure.telemetry.TelemetryData.*;
+import static com.microsoft.azure.telemetry.TelemetryData.HASHED_NAMESPACE;
+import static com.microsoft.azure.telemetry.TelemetryData.SERVICE_NAME;
+import static com.microsoft.azure.telemetry.TelemetryData.getClassPackageSimpleName;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 
 @Lazy
-@Slf4j
 @Configuration
+@ConditionalOnClass(ServiceBusSenderClient.class)
 @EnableConfigurationProperties(ServiceBusProperties.class)
 @ConditionalOnProperty(prefix = "azure.servicebus", value = "connection-string")
 public class ServiceBusAutoConfiguration {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceBusAutoConfiguration.class);
+
     private final ServiceBusProperties properties;
 
-    public ServiceBusAutoConfiguration(ServiceBusProperties properties) {
+    public ServiceBusAutoConfiguration(final ServiceBusProperties properties) {
         this.properties = properties;
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "azure.servicebus", value = {"queue-name", "queue-receive-mode"})
-    public QueueClient queueClient() throws InterruptedException, ServiceBusException {
-        return new QueueClient(new ConnectionStringBuilder(properties.getConnectionString(),
-                properties.getQueueName()), properties.getQueueReceiveMode());
+    @Bean("queueSenderClient")
+    @ConditionalOnMissingBean(name = "queueSenderClient")
+    @ConditionalOnProperty(prefix = "azure.servicebus", value = "queue-name")
+    public ServiceBusSenderClient queueSenderClient() {
+        return new ServiceBusClientBuilder()
+                .connectionString(properties.getConnectionString())
+                .sender()
+                .queueName(properties.getQueueName())
+                .buildClient();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("topicSenderClient")
+    @ConditionalOnMissingBean(name = "topicSenderClient")
     @ConditionalOnProperty(prefix = "azure.servicebus", value = "topic-name")
-    public TopicClient topicClient() throws InterruptedException, ServiceBusException {
-        return new TopicClient(new ConnectionStringBuilder(properties.getConnectionString(),
-                properties.getTopicName()));
+    public ServiceBusSenderClient topicSenderClient() {
+        return new ServiceBusClientBuilder()
+                .connectionString(properties.getConnectionString())
+                .sender()
+                .topicName(properties.getTopicName())
+                .buildClient();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("queueReceiverClient")
+    @ConditionalOnMissingBean(name = "queueReceiverClient")
+    @ConditionalOnProperty(prefix = "azure.servicebus", value = {"queue-name", "queue-receive-mode"})
+    public ServiceBusReceiverClient queueReceiverClient() {
+        return new ServiceBusClientBuilder()
+                .connectionString(properties.getConnectionString())
+                .receiver()
+                .queueName(properties.getQueueName())
+                .receiveMode(properties.getQueueReceiveMode())
+                .buildClient();
+    }
+
+    @Bean("subscriptionReceiverClient")
+    @ConditionalOnMissingBean(name = "subscriptionReceiverClient")
     @ConditionalOnProperty(prefix = "azure.servicebus",
             value = {"topic-name", "subscription-name", "subscription-receive-mode"})
-    public SubscriptionClient subscriptionClient() throws ServiceBusException, InterruptedException {
-        return new SubscriptionClient(new ConnectionStringBuilder(properties.getConnectionString(),
-                properties.getTopicName() + "/subscriptions/" + properties.getSubscriptionName()),
-                properties.getSubscriptionReceiveMode());
+    public ServiceBusReceiverClient subscriptionReceiverClient() {
+        return new ServiceBusClientBuilder()
+                .connectionString(properties.getConnectionString())
+                .receiver()
+                .topicName(properties.getTopicName())
+                .subscriptionName(properties.getSubscriptionName())
+                .receiveMode(properties.getSubscriptionReceiveMode())
+                .buildClient();
     }
 
     private String getHashNamespace() {
         final String namespace = properties.getConnectionString()
-                .replaceFirst("^.*//", "") // emit head 'Endpoint=sb://'
-                .replaceAll("\\..*$", ""); // emit tail '${namespace}.xxx.xxx'
+                .replaceFirst("^.*//", "")
+                .replaceAll("\\..*$", "");
 
-        // Namespace can only be letter, number and hyphen, start with letter, end with letter or number,
-        // with length of 6-50.
         if (!namespace.matches("[a-zA-Z][a-zA-Z-0-9]{4,48}[a-zA-Z0-9]")) {
-            log.warn("Unexpected name {}, please check if it's valid name or portal name rule changes.", namespace);
+            LOG.warn("Unexpected namespace name {}, please check if it's valid.", namespace);
         }
 
         return sha256Hex(namespace);
@@ -93,5 +117,4 @@ public class ServiceBusAutoConfiguration {
             sender.send(ClassUtils.getUserClass(getClass()).getSimpleName(), events);
         }
     }
-
 }

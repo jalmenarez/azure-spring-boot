@@ -6,13 +6,9 @@
 
 package com.microsoft.azure.keyvault.spring;
 
-import com.microsoft.azure.PagedList;
-import com.microsoft.azure.keyvault.KeyVaultClient;
-import com.microsoft.azure.keyvault.models.SecretBundle;
-import com.microsoft.azure.keyvault.models.SecretItem;
+import com.azure.security.keyvault.secrets.SecretClient;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -20,26 +16,37 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class KeyVaultOperation {
     private final long cacheRefreshIntervalInMs;
     private final Object refreshLock = new Object();
-    private final KeyVaultClient keyVaultClient;
-    private final String vaultUri;
+    private final Consumer<Consumer<String>> secretNamesIterator;
+    private final Function<String, String> secretValueRetriever;
     private ConcurrentHashMap<String, Object> propertyNamesHashMap = new ConcurrentHashMap<>();
     private final AtomicLong lastUpdateTime = new AtomicLong();
     private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
-    public KeyVaultOperation(final KeyVaultClient keyVaultClient, final String vaultUri) {
-        this(keyVaultClient, vaultUri, Constants.DEFAULT_REFRESH_INTERVAL_MS);
+    public KeyVaultOperation(final SecretClient secretClient, final String vaultUri) {
+        this(secretClient, vaultUri, Constants.DEFAULT_REFRESH_INTERVAL_MS);
     }
 
-    public KeyVaultOperation(final KeyVaultClient keyVaultClient, String vaultUri, final long refreshInterval) {
-        this.cacheRefreshIntervalInMs = refreshInterval;
-        this.keyVaultClient = keyVaultClient;
-        // TODO(pan): need to validate why last '/' need to be truncated.
-        this.vaultUri = StringUtils.trimTrailingCharacter(vaultUri.trim(), '/');
+    public KeyVaultOperation(final SecretClient secretClient, final String vaultUri, final long refreshInterval) {
+        this(
+            action -> secretClient.listPropertiesOfSecrets().forEach(s -> action.accept(s.getName())),
+            name -> secretClient.getSecret(name).getValue(),
+            refreshInterval
+        );
+    }
 
+    KeyVaultOperation(
+            final Consumer<Consumer<String>> secretNamesIterator,
+            final Function<String, String> secretValueRetriever,
+            final long refreshInterval) {
+        this.cacheRefreshIntervalInMs = refreshInterval;
+        this.secretNamesIterator = secretNamesIterator;
+        this.secretValueRetriever = secretValueRetriever;
         fillSecretsHashMap();
     }
 
@@ -52,28 +59,27 @@ public class KeyVaultOperation {
         }
     }
 
-    private String getKeyvaultSecretName(@NonNull String property) {
+    private String getKeyvaultSecretName(@NonNull final String property) {
         if (property.matches("[a-z0-9A-Z-]+")) {
             return property.toLowerCase(Locale.US);
         } else if (property.matches("[A-Z0-9_]+")) {
             return property.toLowerCase(Locale.US).replaceAll("_", "-");
         } else {
             return property.toLowerCase(Locale.US)
-                    .replaceAll("-", "")     // my-project -> myproject
-                    .replaceAll("_", "")     // my_project -> myproject
-                    .replaceAll("\\.", "-"); // acme.myproject -> acme-myproject
+                    .replaceAll("-", "")
+                    .replaceAll("_", "")
+                    .replaceAll("\\.", "-");
         }
     }
 
     /**
      * For convention we need to support all relaxed binding format from spring, these may include:
-     * <table>
-     * <tr><td>Spring relaxed binding names</td></tr>
-     * <tr><td>acme.my-project.person.first-name</td></tr>
-     * <tr><td>acme.myProject.person.firstName</td></tr>
-     * <tr><td>acme.my_project.person.first_name</td></tr>
-     * <tr><td>ACME_MYPROJECT_PERSON_FIRSTNAME</td></tr>
-     * </table>
+     * <ul>
+     * <li>acme.my-project.person.first-name</li>
+     * <li>acme.myProject.person.firstName</li>
+     * <li>acme.my_project.person.first_name</li>
+     * <li>ACME_MYPROJECT_PERSON_FIRSTNAME</li>
+     * </ul>
      * But azure keyvault only allows ^[0-9a-zA-Z-]+$ and case insensitive, so there must be some conversion
      * between spring names and azure keyvault names.
      * For example, the 4 properties stated above should be convert to acme-myproject-person-firstname in keyvault.
@@ -85,7 +91,6 @@ public class KeyVaultOperation {
         Assert.hasText(property, "property should contain text.");
         final String secretName = getKeyvaultSecretName(property);
 
-        // refresh periodically
         if (System.currentTimeMillis() - this.lastUpdateTime.get() > this.cacheRefreshIntervalInMs) {
             synchronized (this.refreshLock) {
                 if (System.currentTimeMillis() - this.lastUpdateTime.get() > this.cacheRefreshIntervalInMs) {
@@ -96,8 +101,7 @@ public class KeyVaultOperation {
         }
 
         if (this.propertyNamesHashMap.containsKey(secretName)) {
-            final SecretBundle secretBundle = this.keyVaultClient.getSecret(this.vaultUri, secretName);
-            return secretBundle.value();
+            return this.secretValueRetriever.apply(secretName);
         } else {
             return null;
         }
@@ -108,13 +112,10 @@ public class KeyVaultOperation {
             this.rwLock.writeLock().lock();
             this.propertyNamesHashMap.clear();
 
-            final PagedList<SecretItem> secrets = this.keyVaultClient.listSecrets(this.vaultUri);
-            secrets.loadAll();
-
-            secrets.forEach(s -> {
-                final String secretName = s.id().replace(vaultUri + "/secrets/", "").toLowerCase(Locale.US);
-                propertyNamesHashMap.putIfAbsent(secretName, s.id());
-                propertyNamesHashMap.putIfAbsent(secretName.replaceAll("-", "."), s.id());
+            this.secretNamesIterator.accept(name -> {
+                final String secretName = name.toLowerCase(Locale.US);
+                propertyNamesHashMap.putIfAbsent(secretName, name);
+                propertyNamesHashMap.putIfAbsent(secretName.replaceAll("-", "."), name);
             });
 
             this.lastUpdateTime.set(System.currentTimeMillis());

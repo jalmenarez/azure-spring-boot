@@ -10,6 +10,7 @@ import com.microsoft.azure.utils.PropertyLoader;
 
 public class Constants {
     public static final String AZURE_KEYVAULT_USER_AGENT = "spring-boot-starter/" + PropertyLoader.getProjectVersion();
+    public static final String AZURE_KEYVAULT_TENANT_ID = "azure.keyvault.tenant-id";
     public static final String AZURE_KEYVAULT_CLIENT_ID = "azure.keyvault.client-id";
     public static final String AZURE_KEYVAULT_CLIENT_KEY = "azure.keyvault.client-key";
     public static final String AZURE_KEYVAULT_CERTIFICATE_PATH = "azure.keyvault.certificate.path";

@@ -5,10 +5,8 @@
  */
 package sample.cloudfoundry.storage;
 
-import com.microsoft.azure.storage.blob.BlockBlobURL;
-import com.microsoft.azure.storage.blob.ContainerURL;
-import com.microsoft.azure.storage.blob.TransferManager;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,29 +22,25 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.channels.AsynchronousFileChannel;
 
-@SuppressFBWarnings({"RV_RETURN_VALUE_IGNORED"})
 @RestController
 public class StorageRestController {
 
     public static final String IMAGE_PATH =
             "https://raw.githubusercontent.com/mjeffries-pivotal/pcf-samples/master/images/azure-pcf.jpg";
-    private static final Logger LOG = LoggerFactory
-            .getLogger(StorageRestController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StorageRestController.class);
 
     @Autowired
-    private ContainerURL containerURL;
+    private BlobContainerClient containerClient;
 
     @RequestMapping(value = "/blob", method = RequestMethod.GET)
     @ResponseBody
-    public void showBlob(HttpServletResponse response) {
+    public void showBlob(final HttpServletResponse response) {
         InputStream is = null;
-
         try {
             LOG.info("showBlob start");
-            if (containerURL == null) {
-                LOG.error("ContainerURL is null!");
+            if (containerClient == null) {
+                LOG.error("BlobContainerClient is null!");
                 return;
             }
 
@@ -55,21 +49,15 @@ public class StorageRestController {
             response.setContentType(MediaType.IMAGE_JPEG_VALUE);
             IOUtils.copy(is, response.getOutputStream());
 
-            // Create container.
-            containerURL.create(null, null, null);
+            if (!containerClient.exists()) {
+                containerClient.create();
+            }
 
-            // Upload an image file.
             LOG.debug("Uploading image...");
-            final BlockBlobURL blockBlobURL = containerURL.createBlockBlobURL("image1.jpg");
-            final File imageFile = new File(IMAGE_PATH);
-            final AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(imageFile.toPath());
-
-            TransferManager.uploadFileToBlockBlob(fileChannel, blockBlobURL, 8 * 1024 * 1024, null)
-                    .subscribe(r -> {
-                        LOG.debug("Uploading image complete");
-                    }, error -> {
-                        LOG.error("Failed to upload image", error);
-                    });
+            final BlobClient blobClient = containerClient.getBlobClient("image1.jpg");
+            final File imageFile = File.createTempFile("azure-image", ".jpg");
+            blobClient.uploadFromFile(imageFile.getAbsolutePath(), true);
+            LOG.debug("Uploading image complete");
 
         } catch (IOException e) {
             LOG.error("Error retrieving image", e);

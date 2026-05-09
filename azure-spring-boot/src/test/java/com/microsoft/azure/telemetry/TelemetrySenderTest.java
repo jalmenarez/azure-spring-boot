@@ -40,16 +40,16 @@ public class TelemetrySenderTest {
 
     @Test
     public void testSendWithValidEventData() {
-        ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
+        final ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
         when(mockRestTemplate.exchange(anyString(), any(), any(), eq(String.class)))
             .thenReturn(successResponse);
 
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         properties.put("key1", "value1");
 
         telemetrySender.send("TestEvent", properties);
 
-        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockRestTemplate).exchange(urlCaptor.capture(), any(), any(), eq(String.class));
 
         assertEquals("https://dc.services.visualstudio.com/v2/track", urlCaptor.getValue());
@@ -57,11 +57,11 @@ public class TelemetrySenderTest {
 
     @Test
     public void testSendAddsInstallationIdToProperties() {
-        ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
+        final ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
         when(mockRestTemplate.exchange(anyString(), any(), any(), eq(String.class)))
             .thenReturn(successResponse);
 
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         properties.put("key1", "value1");
 
         telemetrySender.send("TestEvent", properties);
@@ -72,7 +72,7 @@ public class TelemetrySenderTest {
 
     @Test
     public void testSendWithNullProperties() {
-        ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
+        final ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
         when(mockRestTemplate.exchange(anyString(), any(), any(), eq(String.class)))
             .thenReturn(successResponse);
 
@@ -83,7 +83,7 @@ public class TelemetrySenderTest {
 
     @Test
     public void testSendWithEmptyEventName() {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
             telemetrySender.send("", properties);
@@ -92,7 +92,7 @@ public class TelemetrySenderTest {
 
     @Test
     public void testSendWithNullEventName() {
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
             telemetrySender.send(null, properties);
@@ -101,11 +101,11 @@ public class TelemetrySenderTest {
 
     @Test
     public void testSendRetryOnFailure() {
-        ResponseEntity<String> failureResponse = new ResponseEntity<>("Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        final ResponseEntity<String> failureResponse = new ResponseEntity<>("Error", HttpStatus.INTERNAL_SERVER_ERROR);
         when(mockRestTemplate.exchange(anyString(), any(), any(), eq(String.class)))
             .thenReturn(failureResponse);
 
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         telemetrySender.send("TestEvent", properties);
 
         verify(mockRestTemplate, times(3)).exchange(anyString(), any(), any(), eq(String.class));
@@ -113,11 +113,11 @@ public class TelemetrySenderTest {
 
     @Test
     public void testSendStopsOnSuccess() {
-        ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
+        final ResponseEntity<String> successResponse = new ResponseEntity<>("OK", HttpStatus.OK);
         when(mockRestTemplate.exchange(anyString(), any(), any(), eq(String.class)))
             .thenReturn(successResponse);
 
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         telemetrySender.send("TestEvent", properties);
 
         verify(mockRestTemplate, times(1)).exchange(anyString(), any(), any(), eq(String.class));
@@ -128,7 +128,7 @@ public class TelemetrySenderTest {
         when(mockRestTemplate.exchange(anyString(), any(), any(), eq(String.class)))
             .thenThrow(new RuntimeException("Connection error"));
 
-        Map<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         telemetrySender.send("TestEvent", properties);
 
         verify(mockRestTemplate, times(3)).exchange(anyString(), any(), any(), eq(String.class));

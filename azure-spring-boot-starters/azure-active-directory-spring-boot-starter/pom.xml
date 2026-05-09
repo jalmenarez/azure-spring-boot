@@ -43,9 +43,10 @@
             <artifactId>spring-security-config</artifactId>
         </dependency>
 
+        <!-- azure-identity replaces deprecated adal4j -->
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>adal4j</artifactId>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>

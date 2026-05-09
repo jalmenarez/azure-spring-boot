@@ -23,34 +23,35 @@ public class TelemetryDataTest {
 
     @Test
     public void testGetClassPackageSimpleNameWithValidClass() {
-        String result = TelemetryData.getClassPackageSimpleName(String.class);
+        final String result = TelemetryData.getClassPackageSimpleName(String.class);
         assertEquals("lang", result);
     }
 
     @Test
     public void testGetClassPackageSimpleNameWithCustomClass() {
-        String result = TelemetryData.getClassPackageSimpleName(TelemetryData.class);
+        final String result = TelemetryData.getClassPackageSimpleName(TelemetryData.class);
         assertEquals("telemetry", result);
     }
 
     @Test
     public void testGetClassPackageSimpleNameWithNullClass() {
-        String result = TelemetryData.getClassPackageSimpleName(null);
+        final String result = TelemetryData.getClassPackageSimpleName(null);
         assertEquals("unknown", result);
     }
 
     @Test
     public void testGetClassPackageSimpleNameWithDeeplyNestedClass() {
-        String result = TelemetryData.getClassPackageSimpleName(com.microsoft.azure.telemetry.TelemetryData.class);
+        final Class<?> clazz = com.microsoft.azure.telemetry.TelemetryData.class;
+        final String result = TelemetryData.getClassPackageSimpleName(clazz);
         assertEquals("telemetry", result);
     }
 
     @Test
     public void testGetClassPackageSimpleNameRemovesAllQualifiers() {
-        String packageName = "com.microsoft.azure.telemetry";
-        Class<?> testClass = com.microsoft.azure.telemetry.TelemetryData.class;
+        final String packageName = "com.microsoft.azure.telemetry";
+        final Class<?> testClass = com.microsoft.azure.telemetry.TelemetryData.class;
 
-        String result = TelemetryData.getClassPackageSimpleName(testClass);
+        final String result = TelemetryData.getClassPackageSimpleName(testClass);
 
         assertNotNull(result);
         assertFalse(result.contains("."));
@@ -61,24 +62,20 @@ public class TelemetryDataTest {
 
     @Test
     public void testGetClassPackageSimpleNameWithBuiltInClass() {
-        String result = TelemetryData.getClassPackageSimpleName(Integer.class);
+        final String result = TelemetryData.getClassPackageSimpleName(Integer.class);
         assertEquals("lang", result);
     }
 
     @Test
     public void testGetClassPackageSimpleNameWithUtilClass() {
-        String result = TelemetryData.getClassPackageSimpleName(java.util.HashMap.class);
+        final String result = TelemetryData.getClassPackageSimpleName(java.util.HashMap.class);
         assertEquals("util", result);
     }
 
     @Test
-    public void testTelemetryDataCannotBeInstantiated() {
-        try {
-            TelemetryData data = new TelemetryData();
-            assertNotNull(data);
-        } catch (Exception e) {
-            fail("TelemetryData should be instantiable, though its constructor is private");
-        }
+    public void testTelemetryDataHasOnlyStaticMembers() {
+        assertNotNull(TelemetryData.INSTALLATION_ID);
+        assertNotNull(TelemetryData.SERVICE_NAME);
     }
 
     @Test

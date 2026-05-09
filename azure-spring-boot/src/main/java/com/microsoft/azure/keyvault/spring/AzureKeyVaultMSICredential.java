@@ -5,34 +5,23 @@
  */
 package com.microsoft.azure.keyvault.spring;
 
-import com.microsoft.azure.AzureEnvironment;
-import com.microsoft.azure.credentials.AzureTokenCredentials;
-import com.microsoft.azure.credentials.MSICredentials;
-import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
+import com.azure.core.credential.TokenCredential;
+import com.azure.identity.ManagedIdentityCredentialBuilder;
 
-import java.io.IOException;
+public class AzureKeyVaultMSICredential {
+    private final TokenCredential tokenCredential;
 
-public class AzureKeyVaultMSICredential extends KeyVaultCredentials {
-    private final AzureTokenCredentials tokenCredentials;
-
-    public AzureKeyVaultMSICredential(AzureTokenCredentials tokenCredentials) {
-        this.tokenCredentials = tokenCredentials;
+    public AzureKeyVaultMSICredential() {
+        this.tokenCredential = new ManagedIdentityCredentialBuilder().build();
     }
 
-    public AzureKeyVaultMSICredential(AzureEnvironment environment) {
-        this.tokenCredentials = new MSICredentials(environment);
+    public AzureKeyVaultMSICredential(final String clientId) {
+        this.tokenCredential = new ManagedIdentityCredentialBuilder()
+                .clientId(clientId)
+                .build();
     }
 
-    public AzureKeyVaultMSICredential(AzureEnvironment environment, String clientId) {
-        this.tokenCredentials = new MSICredentials(environment).withClientId(clientId);
-    }
-
-    @Override
-    public String doAuthenticate(String authorization, String resource, String scope) {
-        try {
-            return tokenCredentials.getToken(resource);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to do authentication.", e);
-        }
+    public TokenCredential getTokenCredential() {
+        return tokenCredential;
     }
 }

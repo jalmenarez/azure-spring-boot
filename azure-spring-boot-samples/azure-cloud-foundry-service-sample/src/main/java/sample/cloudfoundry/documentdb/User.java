@@ -6,6 +6,9 @@
 
 package sample.cloudfoundry.documentdb;
 
+import com.azure.spring.data.cosmos.core.mapping.Container;
+
+@Container(containerName = "mycollection")
 public class User {
     private String id;
     private String firstName;

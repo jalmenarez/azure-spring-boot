@@ -26,9 +26,10 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-spring-boot-starter</artifactId>
         </dependency>
+        <!-- spring-cloud-azure-starter-data-cosmos replaces deprecated spring-data-cosmosdb -->
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>spring-data-cosmosdb</artifactId>
+            <groupId>com.azure.spring</groupId>
+            <artifactId>spring-cloud-azure-starter-data-cosmos</artifactId>
         </dependency>
     </dependencies>
 

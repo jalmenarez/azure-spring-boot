@@ -40,8 +40,7 @@ public class UserPrincipalManager {
     }
 
     /**
-     * Create a new {@link UserPrincipalManager} based of the {@link ServiceEndpoints#getAadKeyDiscoveryUri()} and
-     * {@link AADAuthenticationProperties#getEnvironment()}.
+     * Create a new {@link UserPrincipalManager} based on the AAD key discovery URI and environment from properties.
      *
      * @param serviceEndpointsProps -  used to retrieve the JWKS URL
      * @param aadAuthProps          - used to retrieve the environment.

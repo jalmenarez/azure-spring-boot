@@ -6,7 +6,7 @@
 
 package com.microsoft.azure.spring.autoconfigure.servicebus;
 
-import com.microsoft.azure.servicebus.ReceiveMode;
+import com.azure.messaging.servicebus.models.ServiceBusReceiveMode;
 
 import javax.validation.constraints.NotEmpty;
 
@@ -30,7 +30,7 @@ public class ServiceBusProperties {
     /**
      * Queue receive mode.
      */
-    private ReceiveMode queueReceiveMode;
+    private ServiceBusReceiveMode queueReceiveMode = ServiceBusReceiveMode.PEEK_LOCK;
 
     /**
      * Topic name. Entity path of the topic.
@@ -45,25 +45,15 @@ public class ServiceBusProperties {
     /**
      * Subscription receive mode.
      */
-    private ReceiveMode subscriptionReceiveMode;
+    private ServiceBusReceiveMode subscriptionReceiveMode = ServiceBusReceiveMode.PEEK_LOCK;
 
     private boolean allowTelemetry = true;
 
-    /**
-     * return allow telemery or not
-     *
-     * @return
-     */
     public boolean isAllowTelemetry() {
         return allowTelemetry;
     }
 
-    /**
-     * Set allowTelemetry
-     *
-     * @param allowTelemetry
-     */
-    public void setAllowTelemetry(boolean allowTelemetry) {
+    public void setAllowTelemetry(final boolean allowTelemetry) {
         this.allowTelemetry = allowTelemetry;
     }
 
@@ -71,7 +61,7 @@ public class ServiceBusProperties {
         return connectionString;
     }
 
-    public void setConnectionString(String connectionString) {
+    public void setConnectionString(final String connectionString) {
         this.connectionString = connectionString;
     }
 
@@ -79,15 +69,15 @@ public class ServiceBusProperties {
         return queueName;
     }
 
-    public void setQueueName(String queueName) {
+    public void setQueueName(final String queueName) {
         this.queueName = queueName;
     }
 
-    public ReceiveMode getQueueReceiveMode() {
+    public ServiceBusReceiveMode getQueueReceiveMode() {
         return queueReceiveMode;
     }
 
-    public void setQueueReceiveMode(ReceiveMode queueReceiveMode) {
+    public void setQueueReceiveMode(final ServiceBusReceiveMode queueReceiveMode) {
         this.queueReceiveMode = queueReceiveMode;
     }
 
@@ -95,7 +85,7 @@ public class ServiceBusProperties {
         return topicName;
     }
 
-    public void setTopicName(String topicName) {
+    public void setTopicName(final String topicName) {
         this.topicName = topicName;
     }
 
@@ -103,16 +93,15 @@ public class ServiceBusProperties {
         return subscriptionName;
     }
 
-    public void setSubscriptionName(String subscriptionName) {
+    public void setSubscriptionName(final String subscriptionName) {
         this.subscriptionName = subscriptionName;
     }
 
-    public ReceiveMode getSubscriptionReceiveMode() {
+    public ServiceBusReceiveMode getSubscriptionReceiveMode() {
         return subscriptionReceiveMode;
     }
 
-    public void setSubscriptionReceiveMode(ReceiveMode subscriptionReceiveMode) {
+    public void setSubscriptionReceiveMode(final ServiceBusReceiveMode subscriptionReceiveMode) {
         this.subscriptionReceiveMode = subscriptionReceiveMode;
     }
 }
-

@@ -23,21 +23,23 @@
         module pom file -->
         <project.rootdir>${project.basedir}/..</project.rootdir>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <spring.boot.version>2.7.15</spring.boot.version>
+        <spring.boot.version>2.7.18</spring.boot.version>
+        <spring.cloud.azure.version>4.20.0</spring.cloud.azure.version>
         <findbugs.annotations.version>2.0.1</findbugs.annotations.version>
-        <nimbus.jose.jwt.version>9.16.1</nimbus.jose.jwt.version>
+        <nimbus.jose.jwt.version>9.37.3</nimbus.jose.jwt.version>
         <mockito.core.version>4.11.0</mockito.core.version>
         <azuremonitor.micrometer.registry.version>1.1.0</azuremonitor.micrometer.registry.version>
-        <micrometer.core.version>1.9.5</micrometer.core.version>
-        <spring-boot-actuator-autoconfigure.version>2.7.15</spring-boot-actuator-autoconfigure.version>
+        <micrometer.core.version>1.9.17</micrometer.core.version>
+        <spring-boot-actuator-autoconfigure.version>2.7.18</spring-boot-actuator-autoconfigure.version>
         <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
         <wiremock-standalone.version>2.19.0</wiremock-standalone.version>
-        <commons-io.version>2.11.0</commons-io.version>
-        <hibernate.validator.version>7.0.5.Final</hibernate.validator.version>
+        <commons-io.version>2.15.1</commons-io.version>
+        <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
     </properties>
 
     <profiles>
@@ -66,6 +68,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <!-- Import Spring Cloud Azure dependency management -->
+                <groupId>com.azure.spring</groupId>
+                <artifactId>spring-cloud-azure-dependencies</artifactId>
+                <version>${spring.cloud.azure.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <!-- Import dependency management from Spring Boot -->
                 <groupId>org.springframework.boot</groupId>
@@ -170,6 +180,17 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        --add-opens=com.azure.security.keyvault.secrets/com.azure.security.keyvault.secrets=ALL-UNNAMED
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
+                        --add-opens=java.base/java.util=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
             <plugin>
@@ -212,24 +233,17 @@
                 <inherited>true</inherited>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.5</version>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.3.1</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                     <xmlOutput>true</xmlOutput>
-                    <findbugsXmlOutputDirectory>${project.build.directory}/findbugs
-                    </findbugsXmlOutputDirectory>
+                    <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs
+                    </spotbugsXmlOutputDirectory>
                     <excludeFilterFile>${project.rootdir}/config/findbugs-exclude.xml</excludeFilterFile>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.ant</groupId>
-                        <artifactId>ant</artifactId>
-                        <version>1.9.4</version>
-                    </dependency>
-                </dependencies>
                 <executions>
                     <execution>
                         <phase>compile</phase>
