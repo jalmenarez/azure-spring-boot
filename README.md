@@ -119,6 +119,23 @@ mvn spring-boot:run
 | Port 8080 not accessible | Check VS Code **Ports** tab → forward port 8080 manually |
 | Dependency download fails | Run `mvn dependency:resolve` — Maven cache is shared with host via bind mount |
 
+### Branch Protection (master)
+
+To protect the `master` branch go to **Settings → Branches → Add branch ruleset** and apply the following rules:
+
+| Rule | Value |
+|---|---|
+| **Require a pull request before merging** | ✅ — minimum 1 approval |
+| Dismiss stale reviews when new commits are pushed | ✅ |
+| **Require status checks to pass** | ✅ |
+| Required checks | `build-and-test (17)`, `build-and-test (21)`, `spotbugs`, `build-samples` |
+| Require branches to be up to date before merging | ✅ |
+| **Do not allow force pushes** | ✅ |
+| **Do not allow deletions** | ✅ |
+
+> The required status checks correspond to the jobs defined in `.github/workflows/ci.yml`.
+> They become available for selection after the first CI run on a PR.
+
 ### Other articles
 You could check below articles to learn more on usage of specific starters.
 
