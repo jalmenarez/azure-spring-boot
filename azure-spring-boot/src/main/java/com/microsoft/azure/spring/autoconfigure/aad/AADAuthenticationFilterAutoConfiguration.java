@@ -21,7 +21,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.util.ClassUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,11 +46,6 @@ public class AADAuthenticationFilterAutoConfiguration {
         this.serviceEndpointsProps = serviceEndpointsProps;
     }
 
-    /**
-     * Declare AADAuthenticationFilter bean.
-     *
-     * @return AADAuthenticationFilter bean
-     */
     @Bean
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     @ConditionalOnMissingBean(AADAuthenticationFilter.class)

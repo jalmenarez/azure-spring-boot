@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,12 +120,12 @@ public class AADB2CAutoConfiguration {
         private ClientRegistration b2cClientRegistration(String userFlow) {
             Assert.hasText(userFlow, "User flow should contains text.");
 
-            return ClientRegistration.withRegistrationId(userFlow) // Use flow as registration Id.
+            return ClientRegistration.withRegistrationId(userFlow)
                     .clientId(properties.getClientId())
                     .clientSecret(properties.getClientSecret())
-                    .clientAuthenticationMethod(ClientAuthenticationMethod.POST)
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                     .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                    .redirectUriTemplate(properties.getReplyUrl())
+                    .redirectUri(properties.getReplyUrl())
                     .scope(properties.getClientId(), "openid")
                     .authorizationUri(AADB2CURL.getAuthorizationUrl(properties.getTenant()))
                     .tokenUri(AADB2CURL.getTokenUrl(properties.getTenant(), userFlow))
