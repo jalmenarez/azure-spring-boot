@@ -9,9 +9,9 @@ import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AADB2CLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
@@ -20,14 +20,12 @@ public class AADB2CLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
     public AADB2CLogoutSuccessHandler(@NonNull AADB2CProperties properties) {
         this.properties = properties;
-
         super.setDefaultTargetUrl(getAADB2CEndSessionUrl());
     }
 
     private String getAADB2CEndSessionUrl() {
         final String userFlow = properties.getUserFlows().getSignUpOrSignIn();
         final String logoutSuccessUrl = properties.getLogoutSuccessUrl();
-
         return AADB2CURL.getEndSessionUrl(properties.getTenant(), logoutSuccessUrl, userFlow);
     }
 

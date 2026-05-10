@@ -13,8 +13,8 @@
     <artifactId>azure-active-directory-spring-boot-backend-sample</artifactId>
     <packaging>jar</packaging>
 
-    <name>Azure AD Spring Security 5 OAuth2 Integration Spring Boot Sample</name>
-    <description>Azure AD Spring Security 5 OAuth2 Integration Spring Boot Sample</description>
+    <name>Azure AD Spring Security 6 OAuth2 Integration Spring Boot Sample</name>
+    <description>Azure AD Spring Security 6 OAuth2 Integration Spring Boot Sample</description>
     <url>https://github.com/Microsoft/azure-spring-boot</url>
 
     <dependencies>
@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
-            <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
     </dependencies>
 

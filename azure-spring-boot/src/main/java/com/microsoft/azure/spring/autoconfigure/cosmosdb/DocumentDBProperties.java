@@ -9,7 +9,7 @@ package com.microsoft.azure.spring.autoconfigure.cosmosdb;
 import com.microsoft.azure.documentdb.ConnectionPolicy;
 import com.microsoft.azure.documentdb.ConsistencyLevel;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
@@ -17,32 +17,17 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties("azure.cosmosdb")
 public class DocumentDBProperties {
-    /**
-     * Document DB URI.
-     */
     @NotEmpty
     private String uri;
 
-    /**
-     * Document DB key.
-     */
     @NotEmpty
     private String key;
 
-    /**
-     * Document DB consistency level.
-     */
     private ConsistencyLevel consistencyLevel;
 
-    /**
-     * Document DB database name.
-     */
     @NotEmpty
     private String database;
 
-    /**
-     * Whether allow Microsoft to collect telemetry data.
-     */
     private boolean allowTelemetry = true;
 
     private ConnectionPolicy connectionPolicy = ConnectionPolicy.GetDefault();

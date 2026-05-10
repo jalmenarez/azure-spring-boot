@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
