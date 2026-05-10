@@ -6,12 +6,13 @@
 package sample.aad.security;
 
 import com.microsoft.azure.spring.autoconfigure.b2c.AADB2COidcLoginConfigurer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.SecurityFilterChain;
 
 @EnableWebSecurity
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfiguration {
 
     private final AADB2COidcLoginConfigurer configurer;
 
@@ -19,14 +20,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.configurer = configurer;
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .apply(configurer)
-        ;
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().authenticated())
+                .apply(configurer);
+        return http.build();
     }
 }

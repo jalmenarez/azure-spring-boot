@@ -13,8 +13,8 @@
     <artifactId>azure-active-directory-b2c-spring-boot-sample</artifactId>
     <packaging>jar</packaging>
 
-    <name>Azure AD B2C Spring Security 5 OAuth2 Integration Spring Boot Sample</name>
-    <description>Azure AD B2C Spring Security 5 OAuth2 Integration Spring Boot Sample</description>
+    <name>Azure AD B2C Spring Security 6 OAuth2 Integration Spring Boot Sample</name>
+    <description>Azure AD B2C Spring Security 6 OAuth2 Integration Spring Boot Sample</description>
     <url>https://github.com/Microsoft/azure-spring-boot</url>
 
     <properties>
@@ -43,8 +43,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.thymeleaf.extras</groupId>
-            <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -13,7 +13,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.util.Assert;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import static com.microsoft.azure.spring.autoconfigure.b2c.AADB2CConstants.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
