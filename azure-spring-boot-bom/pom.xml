@@ -47,7 +47,7 @@
 
     <properties>
         <azure.spring.boot.version>2.1.7-SNAPSHOT</azure.spring.boot.version>
-        <spring.cloud.azure.version>4.20.0</spring.cloud.azure.version>
+        <spring.cloud.azure.version>5.11.0</spring.cloud.azure.version>
     </properties>
 
     <dependencyManagement>
@@ -110,12 +110,12 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-active-directory-spring-boot-starter</artifactId>
+                <artifactId>azure-active-directory-b2c-spring-boot-starter</artifactId>
                 <version>${azure.spring.boot.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-active-directory-b2c-spring-boot-starter</artifactId>
+                <artifactId>azure-active-directory-spring-boot-starter</artifactId>
                 <version>${azure.spring.boot.version}</version>
             </dependency>
             <dependency>
@@ -145,17 +145,12 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>spring-data-gremlin-boot-starter</artifactId>
-                <version>${azure.spring.boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-spring-boot-metrics-starter</artifactId>
-                <version>${azure.spring.boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-sqlserver-spring-boot-starter</artifactId>
+                <version>${azure.spring.boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.spring.data.gremlin</groupId>
+                <artifactId>spring-data-gremlin-spring-boot-starter</artifactId>
                 <version>${azure.spring.boot.version}</version>
             </dependency>
         </dependencies>
