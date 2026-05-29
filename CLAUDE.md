@@ -36,7 +36,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Zero-Config Setup** | Auto-discovery and conditional auto-configuration reduce boilerplate |
 | **Type-Safe Properties** | `@ConfigurationProperties` classes with validation using Jakarta Bean Validation |
 | **Spring Security 6.x** | Modern OAuth2/OIDC patterns for Azure AD and B2C authentication |
-| **Comprehensive Testing** | 16 core unit tests, 12 validated starter modules |
+| **Comprehensive Testing** | 32 core unit tests, 12 validated starter modules |
 | **Maven Central Published** | All starters available under `com.azure.spring` groupId |
 
 **Migration Status:** ✅ Completed migration from Spring Boot 2.7.18 → 3.3.0 with full Jakarta EE namespace updates (javax → jakarta)
@@ -56,7 +56,7 @@ cd azure-spring-boot
 mvn clean verify -Dspotbugs.skip=true
 
 # Expected output
-# BUILD SUCCESS (16/16 tests pass)
+# BUILD SUCCESS (32/32 tests pass)
 ```
 
 ### Common Developer Commands
@@ -344,6 +344,66 @@ curl http://localhost:8080/api/blobs
 # 5. Stop with Ctrl+C
 ```
 
+### Workflow 4: Writing Unit Tests
+
+The project uses **JUnit 5** (`org.junit.jupiter.api`) with **AssertJ** for new tests. Some
+legacy tests still use JUnit 4 (`org.junit`) — prefer JUnit 5 for new code.
+
+**Pattern for Properties / POJO classes** (see `ServiceEndpointsPropertiesTest`,
+`AADB2CPropertiesTest`, `ServiceEndpointsTest` for reference):
+
+```java
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+public class MyPropertiesTest {
+
+    private MyProperties properties;
+
+    @BeforeEach
+    public void setUp() {
+        properties = new MyProperties();
+    }
+
+    @Test
+    public void defaultValuesAreSet() {
+        assertThat(properties.isEnabled()).isTrue();
+    }
+
+    @Test
+    public void getterThrowsForInvalidInput() {
+        assertThatThrownBy(() -> properties.lookup("missing"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not found");
+    }
+}
+```
+
+**Pattern for auto-configuration classes** — use Spring Boot's `ApplicationContextRunner`
+to test conditional bean creation without a full application context (see
+`StorageAutoConfigurationTest`):
+
+```java
+private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+        .withConfiguration(AutoConfigurations.of(StorageAutoConfiguration.class));
+
+@Test
+public void beanIsCreatedWhenPropertyPresent() {
+    contextRunner.withPropertyValues("azure.storage.account=myaccount")
+            .run(context -> assertThat(context).hasSingleBean(BlobServiceClient.class));
+}
+```
+
+**Conventions:**
+- Place tests in `src/test/java` mirroring the source package
+- Name test classes `{ClassUnderTest}Test.java`
+- Cover happy path, error/exception handling, and edge cases (null, empty, defaults)
+- Aim for ≥65% coverage on new code (CI-enforced)
+- Run a single new test: `mvn test -f azure-spring-boot/pom.xml -Dtest=MyPropertiesTest`
+
 ---
 
 ## Build & Test Guide
@@ -412,7 +472,7 @@ mvn clean package -pl azure-spring-boot-samples -DskipTests -am
 
 | Component | Count | Status |
 |-----------|-------|--------|
-| Core Module Tests | 16 | ✅ All pass |
+| Core Module Tests | 32 | ✅ All pass |
 | Starter Modules | 12 | ✅ All build |
 | Checkstyle Validations | N/A | ✅ Pass |
 | SpotBugs Analysis | N/A | ✅ Clean |
@@ -570,5 +630,5 @@ Starters are published to [Maven Central](https://search.maven.org/) under:
 
 ---
 
-**Last Updated:** May 26, 2026  
+**Last Updated:** May 29, 2026  
 **Migration Status:** ✅ Complete (Spring Boot 3.3.0 + Jakarta EE)
