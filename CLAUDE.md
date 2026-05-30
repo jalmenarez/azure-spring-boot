@@ -107,6 +107,23 @@ azure-spring-boot/
     └── ... 8 more samples
 ```
 
+### Build Order
+
+The reactor enforces a strict build-order dependency. Build/install upstream
+modules before the ones that depend on them:
+
+```
+azure-spring-boot-bom         ← imports spring-cloud-azure-dependencies:5.11.0
+  └── azure-spring-boot-parent  ← plugin/dependency management, surefire JVM args
+        └── azure-spring-boot   ← autoconfigure JAR (the core module)
+              └── azure-spring-boot-starters/*  (one starter per Azure service)
+                    └── azure-spring-boot-samples/*  (runnable Spring Boot apps)
+```
+
+Build-configuration changes usually belong in `azure-spring-boot-parent/pom.xml`
+(plugins, versions) or `azure-spring-boot-bom/pom.xml` (imported BOMs). Starters
+and samples should not redeclare versions — they inherit from the BOM.
+
 ### File Structure Within Each Module
 
 **For each Azure Service:**
@@ -561,6 +578,24 @@ private void initialize() { }
 </dependency>
 ```
 
+#### 6. `Filename too long` on Windows
+
+**Error:** `Filename too long` when cloning on Windows.
+
+**Solution:** Clone with the long-paths option:
+```bash
+git clone -c core.longPaths=true https://github.com/jalmenarez/azure-spring-boot.git
+```
+
+#### 7. `WARNING: Unknown module` During Tests
+
+**Error:** `WARNING: Unknown module` printed during the test phase.
+
+**Context:** Caused by invalid `--add-opens` entries in the surefire config.
+
+**Solution:** Only `java.base/java.lang` and `java.base/java.util` opens are valid.
+Do not add opens for `com.azure.*` modules — they are not named JVM modules.
+
 ---
 
 ## Spring Boot 3.x Migration Guide
@@ -592,6 +627,17 @@ This codebase was migrated from **Spring Boot 2.7.18** to **Spring Boot 3.3.0**.
 - [ ] Checkstyle passes: `mvn checkstyle:check`
 - [ ] SpotBugs passes: `mvn spotbugs:check`
 
+### Critical Migration Context
+
+These decisions are intentional — **do not revert them without explicit instruction**:
+
+- **Group ID for published starters**: `com.azure.spring` (not legacy `com.microsoft.azure`). The reactor build itself still uses `com.microsoft.azure` as its groupId — both coexist intentionally.
+- **Azure SDK clients**: use `com.azure.*` (e.g. `BlobServiceClient`, `SecretClient`, `ServiceBusSenderClient`, `CosmosRepository`). Legacy `azure-keyvault`, `azure-storage` reactive `ServiceURL`/`ContainerURL`, `QueueClient`/`TopicClient`, ADAL4J, and `@Document`/`DocumentDbRepository` are all removed.
+- **`KeyVaultOperation`** uses functional interfaces (`Consumer`/`Function`) instead of holding a `SecretClient` reference. This is intentional — `SecretClient` is `final` and sealed by the Java 17 module system, so it cannot be mocked directly. Tests inject lambdas instead.
+- **Surefire `--add-opens`** flags in `azure-spring-boot-parent/pom.xml` are required for Java 17 reflection. Only the `java.base/java.lang` and `java.base/java.util` opens are valid — do not add opens for `com.azure.*` modules (they are not named JVM modules and produce `WARNING: Unknown module` at test time).
+- **SpotBugs 4.8.3.1** replaced FindBugs 3.0.5 (incompatible with Java 17 bytecode). The plugin is bound to the `compile` phase, so `mvn compile spotbugs:check` is sufficient — `mvn verify` runs it too.
+- **Deprecated starters with no Spring Cloud Azure equivalent**: `azure-mediaservices-spring-boot-starter`, `spring-data-gremlin-boot-starter`, `azure-sqlserver-spring-boot-starter`, `azure-spring-boot-metrics-starter`. Their source still compiles but they should not be promoted as solutions.
+
 ---
 
 ## Important Notes for Contributors
@@ -610,6 +656,7 @@ This codebase was migrated from **Spring Boot 2.7.18** to **Spring Boot 3.3.0**.
 - **Main branch**: `master` (stable, requires review)
 - **CI checks**: Java 17 & 21, SpotBugs, Checkstyle, Sample builds
 - **All tests must pass** before PR can merge
+- **`master` is branch-protected**: a direct `git push origin master` returns `403 Forbidden`. Always work on a feature branch and open a PR. For an urgent doc-only fix that can't be pushed, commit through the API with the GitHub MCP `mcp__github__create_or_update_file` tool (or `mcp__github__push_files`).
 
 ### Published Artifacts
 
