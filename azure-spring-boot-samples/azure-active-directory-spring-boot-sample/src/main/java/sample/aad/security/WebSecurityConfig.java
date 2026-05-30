@@ -7,33 +7,37 @@ package sample.aad.security;
 
 import com.microsoft.azure.spring.autoconfigure.aad.AADAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-@EnableGlobalMethodSecurity(securedEnabled = true,
-        prePostEnabled = true)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
+public class WebSecurityConfig {
 
     @Autowired
     private AADAuthenticationFilter aadAuthFilter;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-
-        http.authorizeRequests().antMatchers("/home").permitAll();
-        http.authorizeRequests().antMatchers("/api/**").authenticated();
-
-        http.logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-            .logoutSuccessUrl("/").deleteCookies("JSESSIONID").invalidateHttpSession(true);
-
-        http.authorizeRequests().anyRequest().permitAll();
-
-        http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests()
+                .requestMatchers("/home").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
+                .and()
+                .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/").deleteCookies("JSESSIONID").invalidateHttpSession(true)
+                .and()
+                .csrf()
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
 
         http.addFilterBefore(aadAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
     }
 }

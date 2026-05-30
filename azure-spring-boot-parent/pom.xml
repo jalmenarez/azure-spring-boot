@@ -28,18 +28,18 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <spring.boot.version>2.7.18</spring.boot.version>
-        <spring.cloud.azure.version>4.20.0</spring.cloud.azure.version>
+        <spring.boot.version>3.3.0</spring.boot.version>
+        <spring.cloud.azure.version>5.11.0</spring.cloud.azure.version>
         <findbugs.annotations.version>2.0.1</findbugs.annotations.version>
         <nimbus.jose.jwt.version>9.37.3</nimbus.jose.jwt.version>
         <mockito.core.version>4.11.0</mockito.core.version>
         <azuremonitor.micrometer.registry.version>1.1.0</azuremonitor.micrometer.registry.version>
-        <micrometer.core.version>1.9.17</micrometer.core.version>
-        <spring-boot-actuator-autoconfigure.version>2.7.18</spring-boot-actuator-autoconfigure.version>
+        <micrometer.core.version>1.12.0</micrometer.core.version>
+        <spring-boot-actuator-autoconfigure.version>3.3.0</spring-boot-actuator-autoconfigure.version>
         <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
         <wiremock-standalone.version>2.19.0</wiremock-standalone.version>
         <commons-io.version>2.15.1</commons-io.version>
-        <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
+        <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
     </properties>
 
     <profiles>
@@ -144,6 +144,25 @@
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${hibernate.validator.version}</version>
+            </dependency>
+            <!-- Jakarta APIs (Spring Boot 3.x requirement) -->
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>6.0.0</version>
+                <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>3.0.2</version>
+                <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>2.1.1</version>
+                <optional>true</optional>
             </dependency>
         </dependencies>
     </dependencyManagement>

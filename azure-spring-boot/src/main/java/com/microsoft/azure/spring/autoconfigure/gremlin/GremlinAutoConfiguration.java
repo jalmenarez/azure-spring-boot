@@ -23,7 +23,7 @@ import org.springframework.data.annotation.Persistent;
 import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -99,4 +99,3 @@ public class GremlinAutoConfiguration {
         return new MappingGremlinConverter(context);
     }
 }
-

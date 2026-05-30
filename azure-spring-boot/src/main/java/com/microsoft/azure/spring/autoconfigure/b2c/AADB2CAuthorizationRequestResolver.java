@@ -17,7 +17,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,8 +67,6 @@ public class AADB2CAuthorizationRequestResolver implements OAuth2AuthorizationRe
             return getB2CAuthorizationRequest(defaultResolver.resolve(request), registrationId);
         }
 
-        // Return null may not be the good practice, but we need to align with oauth2.client.web
-        // DefaultOAuth2AuthorizationRequestResolver.
         return null;
     }
 
@@ -102,8 +100,6 @@ public class AADB2CAuthorizationRequestResolver implements OAuth2AuthorizationRe
         return null;
     }
 
-    // Handle the forgot password of sign-up-or-in page cannot redirect user to password-reset page.
-    // The B2C service will enhance that, and then related code will be removed.
     private boolean isForgotPasswordAuthorizationRequest(@NonNull HttpServletRequest request) {
         final String error = request.getParameter("error");
         final String description = request.getParameter("error_description");

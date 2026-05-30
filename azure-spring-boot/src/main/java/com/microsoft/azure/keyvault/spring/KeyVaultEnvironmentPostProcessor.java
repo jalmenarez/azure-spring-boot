@@ -7,14 +7,13 @@
 package com.microsoft.azure.keyvault.spring;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.ClassUtils;
 
 public class KeyVaultEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
-    public static final int DEFAULT_ORDER = ConfigFileApplicationListener.DEFAULT_ORDER + 1;
+    public static final int DEFAULT_ORDER = 1; // Spring Boot 3.x removed ConfigFileApplicationListener
     private int order = DEFAULT_ORDER;
 
     @Override
